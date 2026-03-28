@@ -1,16 +1,4 @@
--- ============================================
--- HỆ THỐNG THI TRẮC NGHIỆM TRỰC TUYẾN
--- Database Schema Tối Giản - Chỉ Bảng & Dữ Liệu Mẫu
--- MySQL 8.0
--- ============================================
-
-DROP DATABASE IF EXISTS exam_system;
-CREATE DATABASE exam_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE exam_system;
-
--- ============================================
--- 🟢 1. BẢNG USERS
--- ============================================
+--1. BẢNG USERS
 CREATE TABLE users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -31,9 +19,7 @@ CREATE TABLE users (
     last_login TIMESTAMP NULL
 ) COMMENT 'Quản lý người dùng';
 
--- ============================================
--- 🔵 2. BẢNG QUESTIONS
--- ============================================
+--2. BẢNG QUESTIONS
 CREATE TABLE questions (
     id INT PRIMARY KEY AUTO_INCREMENT,
     content TEXT NOT NULL COMMENT 'Nội dung câu hỏi',
@@ -51,9 +37,7 @@ CREATE TABLE questions (
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
 ) COMMENT 'Ngân hàng câu hỏi';
 
--- ============================================
--- 🟡 3. BẢNG EXAMS
--- ============================================
+--3. BẢNG EXAMS
 CREATE TABLE exams (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL COMMENT 'Tên đề thi',
@@ -71,9 +55,7 @@ CREATE TABLE exams (
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
 ) COMMENT 'Đề thi';
 
--- ============================================
--- 🟠 4. BẢNG EXAM_QUESTIONS (Trung gian)
--- ============================================
+-- 🟠 4. BẢNG EXAM_QUESTIONS
 CREATE TABLE exam_questions (
     id INT PRIMARY KEY AUTO_INCREMENT,
     exam_id INT NOT NULL,
@@ -85,9 +67,7 @@ CREATE TABLE exam_questions (
     UNIQUE KEY unique_exam_question (exam_id, question_id)
 ) COMMENT 'Câu hỏi trong đề thi';
 
--- ============================================
--- 🔴 5. BẢNG RESULTS (Quan trọng nhất)
--- ============================================
+-- 5. BẢNG RESULTS
 CREATE TABLE results (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL COMMENT 'Học sinh thi',
@@ -103,9 +83,7 @@ CREATE TABLE results (
     FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE
 ) COMMENT 'Kết quả thi';
 
--- ============================================
--- 🟣 6. BẢNG ANSWERS (Chi tiết bài làm)
--- ============================================
+-- 6. BẢNG ANSWERS
 CREATE TABLE answers (
     id INT PRIMARY KEY AUTO_INCREMENT,
     result_id INT NOT NULL,
@@ -117,9 +95,7 @@ CREATE TABLE answers (
     FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
 ) COMMENT 'Chi tiết câu trả lời';
 
--- ============================================
 -- ⚫ 7. BẢNG TEACHER_REQUESTS
--- ============================================
 CREATE TABLE teacher_requests (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
@@ -135,9 +111,7 @@ CREATE TABLE teacher_requests (
     FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL
 ) COMMENT 'Yêu cầu trở thành giáo viên';
 
--- ============================================
--- 🔔 8. BẢNG NOTIFICATIONS (Bonus)
--- ============================================
+--8. BẢNG NOTIFICATIONS (Bonus)
 CREATE TABLE notifications (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,

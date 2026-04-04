@@ -15,7 +15,7 @@
             </div>
             <div class="feature-item">
               <div class="feature-title">Bảo mật</div>
-              <p>Công nghệ định danh sinh trắc học tiên tiến.</p>
+              <p>Công nghệ bảo mật hiện đại.</p>
             </div>
           </div>
           <div class="brand-footer">

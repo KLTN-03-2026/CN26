@@ -1,0 +1,28 @@
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Build outputs
+backend/target/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+
+# Temporary files
+*.tmp
+*.temp

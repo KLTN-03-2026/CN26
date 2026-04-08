@@ -55,7 +55,7 @@ CREATE TABLE exams (
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
 ) COMMENT 'Đề thi';
 
--- 🟠 4. BẢNG EXAM_QUESTIONS
+-- 4. BẢNG EXAM_QUESTIONS
 CREATE TABLE exam_questions (
     id INT PRIMARY KEY AUTO_INCREMENT,
     exam_id INT NOT NULL,
@@ -95,7 +95,7 @@ CREATE TABLE answers (
     FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
 ) COMMENT 'Chi tiết câu trả lời';
 
--- ⚫ 7. BẢNG TEACHER_REQUESTS
+-- 7. BẢNG TEACHER_REQUESTS
 CREATE TABLE teacher_requests (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,

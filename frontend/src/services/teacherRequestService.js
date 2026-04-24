@@ -1,0 +1,39 @@
+import api from './api'
+
+export default {
+  createRequest(data) {
+    return api.post('/teacher-requests', data)
+  },
+  
+  getMyRequests() {
+    return api.get('/teacher-requests/my')
+  },
+  
+  getMyRequest() {
+    return api.get('/teacher-requests/my')
+  },
+  
+  getAllRequests() {
+    return api.get('/teacher-requests')
+  },
+  
+  getPendingRequests() {
+    return api.get('/teacher-requests/pending')
+  },
+  
+  getRequestById(id) {
+    return api.get(`/teacher-requests/${id}`)
+  },
+  
+  reviewRequest(id, data) {
+    return api.post(`/teacher-requests/${id}/review`, data)
+  },
+  
+  deleteRequest(id) {
+    return api.delete(`/teacher-requests/${id}`)
+  },
+  
+  countPendingRequests() {
+    return api.get('/teacher-requests/count/pending')
+  }
+}

@@ -128,8 +128,14 @@ router.beforeEach((to, from, next) => {
   
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login')
-  } else if (to.meta.role && authStore.user?.role !== to.meta.role) {
-    next(`/${authStore.user?.role}`)
+  } else if (to.meta.role && (!authStore.user || authStore.user.role !== to.meta.role)) {
+    // Nếu user null hoặc role không khớp → redirect về dashboard tương ứng hoặc login
+    const userRole = authStore.user?.role
+    if (userRole) {
+      next(`/${userRole}`)
+    } else {
+      next('/login')
+    }
   } else {
     next()
   }

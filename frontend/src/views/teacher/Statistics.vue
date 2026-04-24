@@ -1,153 +1,135 @@
 <template>
-  <div class="dashboard-layout">
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <img src="/logo/logo.png" alt="Logo" class="sidebar-logo" />
-        <h2>Hệ Thống Thi</h2>
-        <p>Giáo viên</p>
-      </div>
-      <nav class="sidebar-menu">
-        <a href="#" @click.prevent="$router.push('/teacher')" class="menu-item">
-          Trang chủ
-        </a>
-        <a href="#" @click.prevent="$router.push('/teacher/exams')" class="menu-item">
-          Đề thi
-        </a>
-        <a href="#" @click.prevent="$router.push('/teacher/questions')" class="menu-item">
-          Câu hỏi
-        </a>
-        <a href="#" @click.prevent="$router.push('/teacher/profile')" class="menu-item">
-          Cài đặt
-        </a>
-      </nav>
-      <div class="sidebar-footer">
-        <button class="btn-logout" @click="$router.push('/teacher/exams')">Quay lại</button>
-      </div>
-    </aside>
-    <div class="main-content">
-      <div v-if="loading" class="loading-state">
-        <div class="spinner"></div>
-        <p>Đang tải thống kê...</p>
-      </div>
-      <div v-else-if="!statistics" class="empty-state">
-        <p>Không tìm thấy thống kê</p>
-        <button class="btn-back" @click="$router.push('/teacher/exams')">Quay lại danh sách đề thi</button>
-      </div>
-      <div v-else>
-        <header class="top-header">
-          <div class="header-left">
-            <h1>{{ statistics.examName }}</h1>
-            <p class="exam-description">{{ statistics.examDescription }}</p>
-          </div>
-        </header>
+  <TeacherLayout activeMenu="exams">
+    <LoadingSpinner v-if="loading" />
 
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-info">
-              <h3>{{ statistics.totalStudents }}</h3>
-              <p>Học sinh đã thi</p>
-            </div>
+    <EmptyState 
+      v-else-if="!statistics"
+      message="Không tìm thấy thống kê"
+      actionText="Quay lại danh sách đề thi"
+      @action="$router.push('/teacher/exams')"
+    />
+
+    <div v-else>
+      <header class="top-header">
+        <div class="header-left">
+          <h1>{{ statistics.examName }}</h1>
+          <p class="exam-description">{{ statistics.examDescription }}</p>
+        </div>
+        <button class="btn-back" @click="$router.push('/teacher/exams')">Quay lại</button>
+      </header>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>{{ statistics.totalStudents }}</h3>
+            <p>Học sinh đã thi</p>
           </div>
-          <div class="stat-card">
-            <div class="stat-info">
-              <h3>{{ statistics.averageScore }}%</h3>
-              <p>Điểm trung bình</p>
-            </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>{{ statistics.averageScore }}%</h3>
+            <p>Điểm trung bình</p>
           </div>
-          <div class="stat-card">
-            <div class="stat-info">
-              <h3>{{ statistics.highestScore }}%</h3>
-              <p>Điểm cao nhất</p>
-            </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>{{ statistics.highestScore }}%</h3>
+            <p>Điểm cao nhất</p>
           </div>
-          <div class="stat-card">
-            <div class="stat-info">
-              <h3>{{ statistics.lowestScore }}%</h3>
-              <p>Điểm thấp nhất</p>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>{{ statistics.lowestScore }}%</h3>
+            <p>Điểm thấp nhất</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h2>Phân Bố Điểm</h2>
+        <div class="score-distribution">
+          <div v-for="range in scoreRanges" :key="range.label" class="distribution-item">
+            <div class="distribution-count">{{ range.count }}</div>
+            <div class="distribution-label">{{ range.label }}</div>
+            <div class="distribution-bar">
+              <div class="distribution-fill" :style="{ width: getDistributionWidth(range.count) + '%' }"></div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="section-card">
-          <h2>Phân Bố Điểm</h2>
-          <div class="score-distribution">
-            <div v-for="range in scoreRanges" :key="range.label" class="distribution-item">
-              <div class="distribution-count">{{ range.count }}</div>
-              <div class="distribution-label">{{ range.label }}</div>
-              <div class="distribution-bar">
-                <div class="distribution-fill" :style="{ width: getDistributionWidth(range.count) + '%' }"></div>
-              </div>
+      <div class="section-card">
+        <h2>Danh Sách Kết Quả</h2>
+        <div v-if="!statistics.results || statistics.results.length === 0" class="empty-message">
+          Chưa có học sinh nào thi
+        </div>
+        <div v-else class="results-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Học sinh</th>
+                <th>Email</th>
+                <th>Điểm</th>
+                <th>Số câu đúng</th>
+                <th>Thời gian làm</th>
+                <th>Ngày thi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="result in statistics.results" :key="result.id">
+                <td class="student-name">{{ result.studentName }}</td>
+                <td class="student-email">{{ result.studentEmail }}</td>
+                <td>
+                  <span class="score-badge" :style="{ background: getScoreBadgeColor(result.score) }">
+                    {{ convertToScore10(result.score) }}
+                  </span>
+                </td>
+                <td>{{ result.correctAnswers }}/{{ result.totalQuestions }}</td>
+                <td>{{ formatTimeSpent(result.timeSpent) }}</td>
+                <td>{{ formatDateTime(result.submitTime) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h2>Phân Tích Câu Hỏi</h2>
+        <div v-if="!statistics.questionAnalysis || statistics.questionAnalysis.length === 0" class="empty-message">
+          Chưa có dữ liệu phân tích
+        </div>
+        <div v-else class="questions-analysis">
+          <div v-for="question in statistics.questionAnalysis" :key="question.questionId" class="analysis-item">
+            <div class="analysis-header">
+              <p class="question-content">{{ question.content }}</p>
+              <div class="analysis-percentage">{{ question.correctPercentage }}%</div>
             </div>
-          </div>
-        </div>
-
-        <div class="section-card">
-          <h2>Danh Sách Kết Quả</h2>
-          <div v-if="!statistics.results || statistics.results.length === 0" class="empty-message">
-            Chưa có học sinh nào thi
-          </div>
-          <div v-else class="results-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Học sinh</th>
-                  <th>Email</th>
-                  <th>Điểm</th>
-                  <th>Số câu đúng</th>
-                  <th>Thời gian làm</th>
-                  <th>Ngày thi</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="result in statistics.results" :key="result.id">
-                  <td class="student-name">{{ result.studentName }}</td>
-                  <td class="student-email">{{ result.studentEmail }}</td>
-                  <td>
-                    <span class="score-badge" :style="{ background: getScoreBadgeColor(result.score) }">
-                      {{ convertToScore10(result.score) }}
-                    </span>
-                  </td>
-                  <td>{{ result.correctAnswers }}/{{ result.totalQuestions }}</td>
-                  <td>{{ formatTimeSpent(result.timeSpent) }}</td>
-                  <td>{{ formatDate(result.submitTime) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="section-card">
-          <h2>Phân Tích Câu Hỏi</h2>
-          <div v-if="!statistics.questionAnalysis || statistics.questionAnalysis.length === 0" class="empty-message">
-            Chưa có dữ liệu phân tích
-          </div>
-          <div v-else class="questions-analysis">
-            <div v-for="question in statistics.questionAnalysis" :key="question.questionId" class="analysis-item">
-              <div class="analysis-header">
-                <p class="question-content">{{ question.content }}</p>
-                <div class="analysis-percentage">{{ question.correctPercentage }}%</div>
-              </div>
-              <div class="analysis-details">
-                <span class="detail-badge answer-badge">Đáp án: {{ question.correctAnswer }}</span>
-                <span class="detail-badge count-badge">{{ question.correctCount }}/{{ question.totalAnswers }} đúng</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" :style="{ width: question.correctPercentage + '%', background: getProgressColor(question.correctPercentage) }"></div>
-              </div>
+            <div class="analysis-details">
+              <span class="detail-badge answer-badge">Đáp án: {{ question.correctAnswer }}</span>
+              <span class="detail-badge count-badge">{{ question.correctCount }}/{{ question.totalAnswers }} đúng</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" :style="{ width: question.correctPercentage + '%', background: getProgressColor(question.correctPercentage) }"></div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </TeacherLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useFormatters } from '../../composables/useFormatters'
 import examService from '../../services/examService'
+import TeacherLayout from '../../components/layouts/TeacherLayout.vue'
+import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
+import EmptyState from '../../components/common/EmptyState.vue'
 
 const route = useRoute()
+const router = useRouter()
+const { formatDateTime, formatTimeSpent } = useFormatters()
 
 const statistics = ref(null)
 const loading = ref(false)
@@ -156,19 +138,21 @@ const scoreRanges = computed(() => {
   if (!statistics.value || !statistics.value.results) return []
   
   const ranges = [
-    { label: '0-20%', min: 0, max: 20, count: 0 },
-    { label: '21-40%', min: 21, max: 40, count: 0 },
-    { label: '41-60%', min: 41, max: 60, count: 0 },
-    { label: '61-80%', min: 61, max: 80, count: 0 },
-    { label: '81-100%', min: 81, max: 100, count: 0 }
+    { label: '9-10', min: 90, max: 100, count: 0 },
+    { label: '7-8', min: 70, max: 89, count: 0 },
+    { label: '5-6', min: 50, max: 69, count: 0 },
+    { label: '0-4', min: 0, max: 49, count: 0 }
   ]
-
+  
   statistics.value.results.forEach(result => {
     const score = parseFloat(result.score)
-    const range = ranges.find(r => score >= r.min && score <= r.max)
-    if (range) range.count++
+    ranges.forEach(range => {
+      if (score >= range.min && score <= range.max) {
+        range.count++
+      }
+    })
   })
-
+  
   return ranges
 })
 
@@ -179,7 +163,8 @@ onMounted(() => {
 const loadStatistics = async () => {
   try {
     loading.value = true
-    const response = await examService.getExamStatistics(route.params.id)
+    const examId = route.params.id
+    const response = await examService.getExamStatistics(examId)
     if (response.success) {
       statistics.value = response.data
     }
@@ -190,225 +175,52 @@ const loadStatistics = async () => {
   }
 }
 
-const getScoreColor = (score) => {
-  if (score >= 80) return '#10b981'
-  if (score >= 50) return '#f59e0b'
-  return '#ef4444'
-}
-
-const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('vi-VN')
-}
-
 const getDistributionWidth = (count) => {
   if (!statistics.value || !statistics.value.totalStudents) return 0
   return (count / statistics.value.totalStudents) * 100
 }
 
 const getScoreBadgeColor = (score) => {
-  if (score >= 80) return '#d1fae5'
-  if (score >= 50) return '#fef3c7'
-  return '#fee2e2'
-}
-
-const getProgressColor = (percentage) => {
-  if (percentage >= 80) return '#10b981'
-  if (percentage >= 50) return '#f59e0b'
+  const s = parseFloat(score)
+  if (s >= 80) return '#10b981'
+  if (s >= 65) return '#3b82f6'
+  if (s >= 50) return '#f59e0b'
   return '#ef4444'
 }
 
-const convertToScore10 = (percentage) => {
-  if (!percentage) return '0.0'
-  const score = (parseFloat(percentage) / 10).toFixed(1)
-  return score
+const convertToScore10 = (score) => {
+  return (parseFloat(score) / 10).toFixed(1)
 }
 
-const formatTimeSpent = (seconds) => {
-  if (!seconds || seconds === 0) return 'Chưa có dữ liệu'
-  const minutes = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  if (minutes === 0) return `${secs} giây`
-  if (secs === 0) return `${minutes} phút`
-  return `${minutes} phút ${secs} giây`
+const getProgressColor = (percentage) => {
+  if (percentage >= 70) return '#10b981'
+  if (percentage >= 50) return '#f59e0b'
+  return '#ef4444'
 }
 </script>
 
 <style scoped>
-.dashboard-layout {
-  display: flex;
-  min-height: 100vh;
-  background: #f5f7fa;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.sidebar {
-  width: 280px;
-  background: linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%);
-  color: white;
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  height: 100vh;
-  overflow-y: auto;
-}
-
-.sidebar-header {
-  padding: 35px 25px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  text-align: center;
-}
-
-.sidebar-logo {
-  height: 80px;
-  width: auto;
-  object-fit: contain;
-  margin-bottom: 15px;
-  background: white;
-  padding: 12px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.sidebar-header h2 {
-  font-size: 22px;
-  color: #ffffff;
-  margin: 0 0 6px 0;
-  font-weight: 700;
-}
-
-.sidebar-header p {
-  font-size: 13px;
-  color: rgba(255,255,255,0.7);
-  margin: 0;
-}
-
-.sidebar-menu {
-  flex: 1;
-  padding: 25px 15px;
-  overflow-y: auto;
-}
-
-.menu-item {
-  display: block;
-  padding: 14px 25px;
-  color: rgba(255,255,255,0.8);
-  text-decoration: none;
-  transition: all 0.3s;
-  font-weight: 500;
-  border-radius: 10px;
-  margin-bottom: 6px;
-}
-
-.menu-item:hover {
-  background: rgba(255,255,255,0.1);
-  color: white;
-}
-
-.menu-item.active {
-  background: #ffffff;
-  color: #1e40af;
-  font-weight: 600;
-}
-
-.sidebar-footer {
-  padding: 20px 25px;
-  border-top: 1px solid rgba(255,255,255,0.1);
-}
-
-.btn-logout {
-  width: 100%;
-  padding: 12px;
-  background: rgba(255,255,255,0.1);
-  color: white;
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.btn-logout:hover {
-  background: rgba(255,255,255,0.2);
-}
-
-.main-content {
-  margin-left: 280px;
-  flex: 1;
-  padding: 30px;
-}
-
-.loading-state, .empty-state {
-  background: white;
-  padding: 60px 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  text-align: center;
-  margin-top: 50px;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #e5e7eb;
-  border-top-color: #1e40af;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 0 auto 15px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.empty-state p {
+.exam-description {
   color: #6b7280;
-  margin-bottom: 20px;
-  font-size: 16px;
+  font-size: 14px;
+  margin: 8px 0 0 0;
 }
 
 .btn-back {
-  padding: 12px 24px;
-  background: #1e40af;
-  color: white;
+  padding: 10px 20px;
+  background: #f3f4f6;
+  color: #374151;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
-}
-
-.btn-back:hover {
-  background: #1e3a8a;
-}
-
-.top-header {
-  background: white;
-  padding: 25px 30px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  margin-bottom: 25px;
-}
-
-.header-left h1 {
-  font-size: 28px;
-  color: #1f2937;
-  margin: 0 0 8px 0;
-  font-weight: 800;
-}
-
-.exam-description {
-  font-size: 15px;
-  color: #6b7280;
-  margin: 0;
-  line-height: 1.5;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  margin-bottom: 25px;
+  margin-bottom: 30px;
 }
 
 .stat-card {
@@ -420,14 +232,14 @@ const formatTimeSpent = (seconds) => {
 }
 
 .stat-info h3 {
-  font-size: 42px;
+  font-size: 48px;
   color: #1e40af;
   margin: 0 0 10px 0;
   font-weight: 800;
 }
 
 .stat-info p {
-  font-size: 15px;
+  font-size: 16px;
   color: #6b7280;
   margin: 0;
   font-weight: 500;
@@ -444,31 +256,30 @@ const formatTimeSpent = (seconds) => {
 .section-card h2 {
   font-size: 20px;
   color: #1f2937;
-  margin: 0 0 25px 0;
+  margin: 0 0 20px 0;
   font-weight: 700;
 }
 
 .empty-message {
   text-align: center;
-  padding: 40px 20px;
+  padding: 40px;
   color: #6b7280;
-  font-size: 15px;
 }
 
 .score-distribution {
   display: grid;
-  gap: 20px;
+  gap: 15px;
 }
 
 .distribution-item {
   display: grid;
-  grid-template-columns: 80px 120px 1fr;
+  grid-template-columns: 60px 80px 1fr;
   align-items: center;
   gap: 15px;
 }
 
 .distribution-count {
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 800;
   color: #1e40af;
   text-align: center;
@@ -483,7 +294,7 @@ const formatTimeSpent = (seconds) => {
 .distribution-bar {
   height: 30px;
   background: #f3f4f6;
-  border-radius: 15px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -491,10 +302,6 @@ const formatTimeSpent = (seconds) => {
   height: 100%;
   background: linear-gradient(90deg, #3b82f6 0%, #1e40af 100%);
   transition: width 0.5s ease;
-}
-
-.results-table {
-  overflow-x: auto;
 }
 
 .results-table table {
@@ -531,11 +338,11 @@ const formatTimeSpent = (seconds) => {
 
 .score-badge {
   display: inline-block;
-  padding: 4px 12px;
+  padding: 6px 14px;
+  color: white;
   border-radius: 20px;
-  font-size: 13px;
   font-weight: 700;
-  color: #1f2937;
+  font-size: 14px;
 }
 
 .questions-analysis {
@@ -554,9 +361,8 @@ const formatTimeSpent = (seconds) => {
 .analysis-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: start;
   margin-bottom: 12px;
-  gap: 15px;
 }
 
 .question-content {
@@ -569,10 +375,10 @@ const formatTimeSpent = (seconds) => {
 }
 
 .analysis-percentage {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 800;
   color: #1e40af;
-  flex-shrink: 0;
+  margin-left: 20px;
 }
 
 .analysis-details {
@@ -583,7 +389,7 @@ const formatTimeSpent = (seconds) => {
 
 .detail-badge {
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
 }
@@ -608,7 +414,6 @@ const formatTimeSpent = (seconds) => {
 .progress-fill {
   height: 100%;
   transition: width 0.5s ease;
-  border-radius: 4px;
 }
 
 @media (max-width: 1200px) {
@@ -620,10 +425,6 @@ const formatTimeSpent = (seconds) => {
 @media (max-width: 768px) {
   .stats-grid {
     grid-template-columns: 1fr;
-  }
-  
-  .distribution-item {
-    grid-template-columns: 60px 100px 1fr;
   }
 }
 </style>

@@ -17,9 +17,7 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async register(data) {
       const response = await authService.register(data)
-      if (response.success) {
-        this.setAuth(response.data)
-      }
+      // Không gọi setAuth() vì tài khoản cần xác thực email trước
       return response
     },
     

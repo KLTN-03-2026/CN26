@@ -13,10 +13,6 @@ export default {
     return api.get('/results/my')
   },
   
-  getResultById(id) {
-    return api.get(`/results/${id}`)
-  },
-  
   getResultDetail(id) {
     return api.get(`/results/${id}`)
   },

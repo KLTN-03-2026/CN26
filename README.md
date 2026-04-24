@@ -81,16 +81,16 @@ Frontend sẽ chạy tại: http://localhost:5173
 Sau khi import database, bạn có thể đăng nhập với:
 
 ### Admin
-- Email: admin@exam.com
-- Password: admin123
+- Email:
+- Password:
 
 ### Giáo viên
-- Email: teacher@exam.com
-- Password: teacher123
+- Email: 
+- Password: 
 
 ### Học sinh
-- Email: student@exam.com
-- Password: student123
+- Email: 
+- Password: 
 
 ## Tính năng chính
 
@@ -140,19 +140,7 @@ exam-system/
 └── README.md
 ```
 
-## API Documentation
 
-Xem chi tiết tại: `backend/TESTING.md`
-
-Hoặc import Postman collection: `backend/Exam-System-API.postman_collection.json`
-
-## Test hệ thống
-
-### Test Backend
-```bash
-cd backend
-bash test-api.sh
-```
 
 ### Test Frontend
 1. Chạy backend

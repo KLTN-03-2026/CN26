@@ -70,7 +70,7 @@ const verifyEmail = async () => {
       success.value = true
     }
   } catch (err) {
-    error.value = err.response?.data?.message || 'Xác thực thất bại. Token có thể đã hết hạn hoặc không hợp lệ.'
+    error.value = err.message || err.error || 'Xác thực thất bại. Token có thể đã hết hạn hoặc không hợp lệ.'
   } finally {
     loading.value = false
   }

@@ -9,6 +9,10 @@ export default {
     return api.get('/teacher-requests/my')
   },
   
+  getMyRequest() {
+    return api.get('/teacher-requests/my')
+  },
+  
   getAllRequests() {
     return api.get('/teacher-requests')
   },

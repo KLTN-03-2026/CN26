@@ -33,18 +33,14 @@ export default {
     return api.delete(`/questions/${id}`)
   },
   
-  generateQuestionsWithAI(data) {
-    return api.post('/questions/generate-ai', data)
-  },
-  
   generateAIQuestions(data) {
     return api.post('/questions/generate-ai', data)
   },
   
-  importQuestionsFromWord(file) {
+  parseWordFile(file) {
     const formData = new FormData()
     formData.append('file', file)
-    return api.post('/questions/import-word', formData, {
+    return api.post('/questions/parse-word', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }

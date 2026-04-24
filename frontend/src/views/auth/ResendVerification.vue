@@ -60,7 +60,7 @@ const handleResend = async () => {
       success.value = true
     }
   } catch (err) {
-    error.value = err.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại.'
+    error.value = err.message || err.error || 'Có lỗi xảy ra. Vui lòng thử lại.'
   } finally {
     loading.value = false
   }

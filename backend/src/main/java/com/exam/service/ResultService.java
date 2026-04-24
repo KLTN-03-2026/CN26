@@ -1,5 +1,6 @@
 package com.exam.service;
 
+import com.exam.dto.AnswerDTO;
 import com.exam.dto.ExamStatisticsDTO;
 import com.exam.dto.ResultDTO;
 import com.exam.dto.SubmitAnswerRequest;
@@ -145,7 +146,17 @@ public class ResultService {
             throw new BadRequestException("Bạn không có quyền xem kết quả này");
         }
         
-        return convertToDTO(result);
+        ResultDTO dto = convertToDTO(result);
+        
+        // Add answers if result is graded
+        if (result.getStatus() == Result.Status.graded) {
+            List<Answer> answers = answerRepository.findByResult(result);
+            dto.setAnswers(answers.stream()
+                    .map(this::convertAnswerToDTO)
+                    .collect(Collectors.toList()));
+        }
+        
+        return dto;
     }
     
     public List<Answer> getResultAnswers(Integer resultId) {
@@ -282,6 +293,21 @@ public class ResultService {
         dto.setStatus(result.getStatus().name());
         dto.setStartTime(result.getStartTime());
         dto.setSubmitTime(result.getSubmitTime());
+        return dto;
+    }
+    
+    private AnswerDTO convertAnswerToDTO(Answer answer) {
+        AnswerDTO dto = new AnswerDTO();
+        dto.setId(answer.getId());
+        dto.setQuestionId(answer.getQuestion().getId());
+        dto.setQuestionContent(answer.getQuestion().getContent());
+        dto.setOptionA(answer.getQuestion().getOptionA());
+        dto.setOptionB(answer.getQuestion().getOptionB());
+        dto.setOptionC(answer.getQuestion().getOptionC());
+        dto.setOptionD(answer.getQuestion().getOptionD());
+        dto.setSelectedAnswer(answer.getSelectedAnswer().name());
+        dto.setCorrectAnswer(answer.getQuestion().getCorrectAnswer().name());
+        dto.setIsCorrect(answer.getIsCorrect());
         return dto;
     }
 }

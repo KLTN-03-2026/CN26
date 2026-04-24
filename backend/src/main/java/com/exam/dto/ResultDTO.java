@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class ResultDTO {
@@ -20,4 +21,5 @@ public class ResultDTO {
     private String status;
     private LocalDateTime startTime;
     private LocalDateTime submitTime;
+    private List<AnswerDTO> answers;
 }

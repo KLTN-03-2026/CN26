@@ -87,6 +87,14 @@ public class QuestionController {
         return ResponseEntity.ok(ApiResponse.success("Sinh câu hỏi bằng AI thành công", questions));
     }
     
+    @PostMapping("/parse-word")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<List<CreateQuestionRequest>>> parseWordFile(
+            @RequestParam("file") MultipartFile file) {
+        List<CreateQuestionRequest> questions = questionService.parseWordFile(file);
+        return ResponseEntity.ok(ApiResponse.success("Parse file Word thành công", questions));
+    }
+    
     @PostMapping("/import-word")
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     public ResponseEntity<ApiResponse<List<QuestionDTO>>> importQuestionsFromWord(

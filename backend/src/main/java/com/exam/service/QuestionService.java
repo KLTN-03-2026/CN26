@@ -144,6 +144,11 @@ public class QuestionService {
                 .collect(Collectors.toList());
     }
     
+    // Parse Word file only, don't save to database
+    public List<CreateQuestionRequest> parseWordFile(MultipartFile file) {
+        return wordImportService.parseWordFile(file);
+    }
+    
     @Transactional
     public List<QuestionDTO> importQuestionsFromWord(MultipartFile file) {
         User currentUser = userService.getCurrentUser();

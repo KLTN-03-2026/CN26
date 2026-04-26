@@ -61,6 +61,12 @@
             <input v-model="examForm.endTime" type="datetime-local">
           </div>
         </div>
+        
+        <div class="form-group">
+          <label>Số lần được làm lại</label>
+          <input v-model.number="examForm.maxAttempts" type="number" min="0" placeholder="0 = Không giới hạn">
+          <small class="form-hint">Nhập 0 để cho phép làm không giới hạn, nhập 1 để chỉ cho làm 1 lần</small>
+        </div>
 
         <div class="form-group">
           <label>Chọn câu hỏi ({{ selectedQuestions.length }} câu đã chọn)</label>
@@ -126,7 +132,8 @@ const examForm = ref({
   duration: 60,
   subject: '',
   startTime: '',
-  endTime: ''
+  endTime: '',
+  maxAttempts: 0
 })
 
 onMounted(() => {
@@ -182,7 +189,7 @@ const saveExam = async () => {
     }
   } catch (error) {
     console.error('Error saving exam:', error)
-    alert('Có lỗi khi lưu đề thi')
+    alert(error.error || error.message || 'Có lỗi khi lưu đề thi')
   }
 }
 
@@ -194,7 +201,8 @@ const editExam = async (exam) => {
     duration: exam.duration,
     subject: exam.subject,
     startTime: exam.startTime ? formatDateTimeForInput(exam.startTime) : '',
-    endTime: exam.endTime ? formatDateTimeForInput(exam.endTime) : ''
+    endTime: exam.endTime ? formatDateTimeForInput(exam.endTime) : '',
+    maxAttempts: exam.maxAttempts || 0
   }
   
   await loadQuestions()
@@ -229,14 +237,14 @@ const deleteExam = async (id) => {
 const toggleStatus = async (exam) => {
   try {
     const newStatus = !exam.isActive
-    const response = await examService.updateExam(exam.id, { isActive: newStatus })
+    const response = await examService.toggleExamStatus(exam.id)
     if (response.success) {
       alert('Cập nhật trạng thái thành công!')
       loadExams()
     }
   } catch (error) {
     console.error('Error updating status:', error)
-    alert('Có lỗi khi cập nhật trạng thái')
+    alert(error.error || 'Có lỗi khi cập nhật trạng thái')
   }
 }
 
@@ -254,7 +262,8 @@ const closeCreateModal = () => {
     duration: 60,
     subject: '',
     startTime: '',
-    endTime: ''
+    endTime: '',
+    maxAttempts: 0
   }
 }
 
@@ -303,6 +312,14 @@ const openCreateModal = async () => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
+}
+
+.form-hint {
+  display: block;
+  margin-top: 5px;
+  font-size: 13px;
+  color: #6b7280;
+  font-style: italic;
 }
 
 .questions-list {

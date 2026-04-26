@@ -28,6 +28,8 @@ public class CreateExamRequest {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     
+    private Integer maxAttempts = 0; // 0 = unlimited, 1+ = limited attempts
+    
     @NotNull(message = "Danh sách câu hỏi không được để trống")
     private List<Integer> questionIds;
 }

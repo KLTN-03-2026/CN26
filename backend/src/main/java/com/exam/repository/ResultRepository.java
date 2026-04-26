@@ -31,6 +31,8 @@ public interface ResultRepository extends JpaRepository<Result, Integer> {
     
     long countByExamAndStatus(Exam exam, Result.Status status);
     
+    long countByUserAndExamAndStatus(User user, Exam exam, Result.Status status);
+    
     // Statistics queries
     @Query("SELECT AVG(r.score) FROM Result r WHERE r.exam = :exam AND r.status = 'graded'")
     BigDecimal findAverageScoreByExam(@Param("exam") Exam exam);

@@ -83,6 +83,7 @@ public class ExamService {
         exam.setPassingScore(request.getPassingScore());
         exam.setStartTime(request.getStartTime());
         exam.setEndTime(request.getEndTime());
+        exam.setMaxAttempts(request.getMaxAttempts() != null ? request.getMaxAttempts() : 0);
         exam.setTotalQuestions(questions.size());
         exam.setIsActive(true);
         exam.setCreatedBy(currentUser);
@@ -118,6 +119,11 @@ public class ExamService {
             throw new BadRequestException("Bạn không có quyền chỉnh sửa đề thi này");
         }
         
+        // Check if exam has started
+        if (exam.getStartTime() != null && exam.getStartTime().isBefore(java.time.LocalDateTime.now())) {
+            throw new BadRequestException("Không thể sửa bài thi vì bài thi đã bắt đầu");
+        }
+        
         // Update exam info
         exam.setName(request.getName());
         exam.setDescription(request.getDescription());
@@ -126,6 +132,7 @@ public class ExamService {
         exam.setPassingScore(request.getPassingScore());
         exam.setStartTime(request.getStartTime());
         exam.setEndTime(request.getEndTime());
+        exam.setMaxAttempts(request.getMaxAttempts() != null ? request.getMaxAttempts() : 0);
         
         // Update questions if provided
         if (request.getQuestionIds() != null && !request.getQuestionIds().isEmpty()) {
@@ -135,8 +142,12 @@ public class ExamService {
                 throw new BadRequestException("Một số câu hỏi không tồn tại");
             }
             
-            // Remove old questions
-            examQuestionRepository.deleteByExam(exam);
+            // Remove old questions FIRST before adding new ones
+            List<ExamQuestion> oldQuestions = examQuestionRepository.findByExam(exam);
+            examQuestionRepository.deleteAll(oldQuestions);
+            
+            // Flush to ensure delete is executed before insert
+            examQuestionRepository.flush();
             
             // Add new questions
             int order = 1;
@@ -212,6 +223,7 @@ public class ExamService {
         dto.setStartTime(exam.getStartTime());
         dto.setEndTime(exam.getEndTime());
         dto.setIsActive(exam.getIsActive());
+        dto.setMaxAttempts(exam.getMaxAttempts());
         dto.setCreatedById(exam.getCreatedBy().getId());
         dto.setCreatedByName(exam.getCreatedBy().getFullName());
         dto.setCreatedAt(exam.getCreatedAt());

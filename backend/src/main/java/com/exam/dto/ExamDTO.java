@@ -17,6 +17,7 @@ public class ExamDTO {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private Boolean isActive;
+    private Integer maxAttempts;
     private Integer createdById;
     private String createdByName;
     private LocalDateTime createdAt;

@@ -47,6 +47,9 @@ public class Exam {
     @Column(name = "is_active")
     private Boolean isActive = true;
     
+    @Column(name = "max_attempts")
+    private Integer maxAttempts = 0; // 0 = unlimited, 1+ = limited attempts
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;

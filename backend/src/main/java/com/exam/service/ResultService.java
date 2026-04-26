@@ -61,10 +61,26 @@ public class ResultService {
         }
         
         // Check if user already has an in-progress attempt
-        resultRepository.findByUserAndExamAndStatus(currentUser, exam, Result.Status.in_progress)
-                .ifPresent(result -> {
-                    throw new BadRequestException("Bạn đang có bài thi chưa hoàn thành");
-                });
+        // If yes, return that result instead of creating new one
+        var existingResult = resultRepository.findByUserAndExamAndStatus(currentUser, exam, Result.Status.in_progress);
+        if (existingResult.isPresent()) {
+            return convertToDTO(existingResult.get());
+        }
+        
+        // Check max attempts limit
+        if (exam.getMaxAttempts() != null && exam.getMaxAttempts() > 0) {
+            // Count only completed (graded) attempts, not in_progress
+            long completedAttempts = resultRepository.countByUserAndExamAndStatus(currentUser, exam, Result.Status.graded);
+            if (completedAttempts >= exam.getMaxAttempts()) {
+                throw new BadRequestException("Bạn đã hết số lần làm bài cho đề thi này");
+            }
+        }
+        
+        // Double-check: Ensure no other in_progress result exists (prevent race condition from multiple tabs)
+        var doubleCheckResult = resultRepository.findByUserAndExamAndStatus(currentUser, exam, Result.Status.in_progress);
+        if (doubleCheckResult.isPresent()) {
+            return convertToDTO(doubleCheckResult.get());
+        }
         
         // Create new result
         Result result = new Result();
@@ -148,12 +164,23 @@ public class ResultService {
         
         ResultDTO dto = convertToDTO(result);
         
-        // Add answers if result is graded
+        // Only show answers if:
+        // 1. Result is graded AND
+        // 2. (User is teacher/admin OR exam has ended)
         if (result.getStatus() == Result.Status.graded) {
-            List<Answer> answers = answerRepository.findByResult(result);
-            dto.setAnswers(answers.stream()
-                    .map(this::convertAnswerToDTO)
-                    .collect(Collectors.toList()));
+            Exam exam = result.getExam();
+            LocalDateTime now = LocalDateTime.now();
+            boolean isTeacherOrAdmin = currentUser.getRole() == User.Role.teacher || 
+                                      currentUser.getRole() == User.Role.admin;
+            boolean examEnded = exam.getEndTime() != null && now.isAfter(exam.getEndTime());
+            
+            // Only populate answers if teacher/admin OR exam has ended
+            if (isTeacherOrAdmin || examEnded) {
+                List<Answer> answers = answerRepository.findByResult(result);
+                dto.setAnswers(answers.stream()
+                        .map(this::convertAnswerToDTO)
+                        .collect(Collectors.toList()));
+            }
         }
         
         return dto;

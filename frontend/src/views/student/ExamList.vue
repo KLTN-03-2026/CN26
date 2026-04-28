@@ -15,18 +15,6 @@
       <div class="search-box">
         <input v-model="searchQuery" type="text" placeholder="Tìm kiếm đề thi theo tên..." class="search-input">
       </div>
-      <div class="filter-box">
-        <label>Môn học:</label>
-        <select v-model="filterSubject" class="filter-select">
-          <option value="">Tất cả môn học</option>
-          <option value="Toán">Toán</option>
-          <option value="Lý">Lý</option>
-          <option value="Hóa">Hóa</option>
-          <option value="Anh">Anh</option>
-          <option value="Văn">Văn</option>
-          <option value="Sinh">Sinh</option>
-        </select>
-      </div>
     </div>
 
     <div class="exam-stats-bar">
@@ -64,13 +52,13 @@
               <span class="meta-label">Số câu hỏi:</span>
               <span class="meta-value">{{ exam.totalQuestions }}</span>
             </div>
-            <div v-if="exam.startTime" class="meta-item">
+            <div class="meta-item">
               <span class="meta-label">Bắt đầu:</span>
-              <span class="meta-value">{{ formatDateTime(exam.startTime) }}</span>
+              <span class="meta-value">{{ exam.startTime ? formatDateTime(exam.startTime) : 'Không giới hạn' }}</span>
             </div>
-            <div v-if="exam.endTime" class="meta-item">
+            <div class="meta-item">
               <span class="meta-label">Kết thúc:</span>
-              <span class="meta-value">{{ formatDateTime(exam.endTime) }}</span>
+              <span class="meta-value">{{ exam.endTime ? formatDateTime(exam.endTime) : 'Không giới hạn' }}</span>
             </div>
           </div>
         </div>
@@ -101,13 +89,11 @@ const { formatDateTime } = useFormatters()
 const exams = ref([])
 const loading = ref(false)
 const searchQuery = ref('')
-const filterSubject = ref('')
 
 const filteredExams = computed(() => {
   return exams.value.filter(exam => {
     const matchSearch = exam.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    const matchSubject = !filterSubject.value || exam.subject === filterSubject.value
-    return matchSearch && matchSubject
+    return matchSearch
   })
 })
 

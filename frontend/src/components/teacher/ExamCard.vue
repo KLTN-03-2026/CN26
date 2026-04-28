@@ -12,14 +12,14 @@
       <span class="meta-item">{{ exam.duration }} phút</span>
       <span class="meta-item">{{ exam.subject }}</span>
     </div>
-    <div v-if="exam.startTime || exam.endTime" class="exam-dates">
-      <div v-if="exam.startTime" class="date-item">
+    <div class="exam-dates">
+      <div class="date-item">
         <span class="date-label">Bắt đầu:</span>
-        <span class="date-value">{{ formatDateTime(exam.startTime) }}</span>
+        <span class="date-value">{{ exam.startTime ? formatDateTime(exam.startTime) : 'Không giới hạn' }}</span>
       </div>
-      <div v-if="exam.endTime" class="date-item">
+      <div class="date-item">
         <span class="date-label">Kết thúc:</span>
-        <span class="date-value">{{ formatDateTime(exam.endTime) }}</span>
+        <span class="date-value">{{ exam.endTime ? formatDateTime(exam.endTime) : 'Không giới hạn' }}</span>
       </div>
     </div>
     <div class="exam-actions">

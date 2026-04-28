@@ -37,7 +37,7 @@
         </div>
       </div>
 
-      <div class="answers-section">
+      <div class="answers-section" v-if="result.answers && result.answers.length > 0">
         <h2>Chi Tiết Câu Trả Lời</h2>
         <div v-for="(answer, index) in result.answers" :key="answer.id" class="answer-card">
           <div class="answer-header">
@@ -63,6 +63,14 @@
               Đáp án đúng: <strong>{{ answer.correctAnswer }}</strong>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div v-else class="no-details-message">
+        <div class="info-box">
+          <h3>Thông báo</h3>
+          <p>Chi tiết câu trả lời sẽ được công bố sau khi đề thi kết thúc.</p>
+          <p>Hiện tại bạn chỉ có thể xem điểm số.</p>
         </div>
       </div>
     </div>
@@ -323,6 +331,31 @@ const loadResult = async () => {
 
 .correct-answer-note strong {
   font-weight: 700;
+}
+
+.no-details-message {
+  margin-top: 30px;
+}
+
+.info-box {
+  background: #eff6ff;
+  border: 2px solid #3b82f6;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+}
+
+.info-box h3 {
+  font-size: 20px;
+  color: #1e40af;
+  margin: 0 0 15px 0;
+}
+
+.info-box p {
+  font-size: 16px;
+  color: #1f2937;
+  margin: 8px 0;
+  line-height: 1.6;
 }
 
 @media (max-width: 768px) {

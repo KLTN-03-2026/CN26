@@ -54,11 +54,28 @@ const currentQuestionIndex = ref(0)
 const loading = ref(false)
 const timeRemaining = ref(0)
 const resultId = ref(null)
+const examStartTime = ref(null)
 let timer = null
+
+const STORAGE_KEY = computed(() => `exam_${route.params.id}_state`)
 
 const currentQuestion = computed(() => questions.value[currentQuestionIndex.value])
 
 onMounted(async () => {
+  // Try to restore state from localStorage
+  const savedState = localStorage.getItem(STORAGE_KEY.value)
+  if (savedState) {
+    try {
+      const state = JSON.parse(savedState)
+      answers.value = state.answers || {}
+      currentQuestionIndex.value = state.currentQuestionIndex || 0
+      resultId.value = state.resultId
+      examStartTime.value = state.examStartTime
+    } catch (e) {
+      console.error('Error restoring state:', e)
+    }
+  }
+  
   await startExam()
   startTimer()
 })
@@ -74,6 +91,9 @@ const startExam = async () => {
     const startResponse = await resultService.startExam(route.params.id)
     if (startResponse.success) {
       resultId.value = startResponse.data.id
+      if (!examStartTime.value) {
+        examStartTime.value = startResponse.data.startTime
+      }
     }
     
     const examResponse = await examService.getExamById(route.params.id)
@@ -86,12 +106,20 @@ const startExam = async () => {
       questions.value = questionsResponse.data
     }
     
-    if (exam.value && exam.value.duration) {
-      timeRemaining.value = exam.value.duration * 60
+    // Calculate time remaining based on start time
+    if (exam.value && exam.value.duration && examStartTime.value) {
+      const startTime = new Date(examStartTime.value)
+      const now = new Date()
+      const elapsedSeconds = Math.floor((now - startTime) / 1000)
+      const totalSeconds = exam.value.duration * 60
+      timeRemaining.value = Math.max(0, totalSeconds - elapsedSeconds)
     }
+    
+    // Save state to localStorage
+    saveState()
   } catch (error) {
     console.error('Error starting exam:', error)
-    const errorMsg = error.response?.data?.message || error.message || 'Không thể bắt đầu bài thi'
+    const errorMsg = error.error || error.message || 'Không thể bắt đầu bài thi'
     alert(errorMsg)
     router.push('/student')
   } finally {
@@ -111,6 +139,17 @@ const startTimer = () => {
 
 const handleSelectAnswer = (questionId, answer) => {
   answers.value[questionId] = answer
+  saveState()
+}
+
+const saveState = () => {
+  const state = {
+    answers: answers.value,
+    currentQuestionIndex: currentQuestionIndex.value,
+    resultId: resultId.value,
+    examStartTime: examStartTime.value
+  }
+  localStorage.setItem(STORAGE_KEY.value, JSON.stringify(state))
 }
 
 const nextQuestion = () => {
@@ -155,6 +194,8 @@ const submitExam = async () => {
     })
     
     if (response.success) {
+      // Clear saved state after successful submit
+      localStorage.removeItem(STORAGE_KEY.value)
       alert('Nộp bài thành công!')
       router.push(`/student/result/${resultId.value}`)
     }

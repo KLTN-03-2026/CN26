@@ -434,7 +434,17 @@ const saveSelectedAIQuestions = async () => {
     }
     
     alert(`Đã lưu ${savedCount}/${questionsToSave.length} câu hỏi!`)
-    closeAIModal()
+    
+    // Clear data trước khi đóng để không trigger confirm
+    showAIModal.value = false
+    aiGeneratedQuestions.value = []
+    selectedAIQuestions.value = []
+    aiForm.value = {
+      topic: '',
+      count: 5,
+      level: 'medium'
+    }
+    
     await loadQuestions()
   } catch (error) {
     console.error('Error saving AI questions:', error)
@@ -505,7 +515,13 @@ const saveSelectedImportQuestions = async () => {
     }
     
     alert(`Đã lưu ${savedCount}/${questionsToSave.length} câu hỏi!`)
-    closeImportModal()
+    
+    // Clear data trước khi đóng để không trigger confirm
+    showImportModal.value = false
+    importedQuestions.value = []
+    selectedImportQuestions.value = []
+    selectedFile.value = null
+    
     await loadQuestions()
   } catch (error) {
     console.error('Error saving imported questions:', error)

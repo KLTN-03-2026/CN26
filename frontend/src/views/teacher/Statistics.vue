@@ -27,19 +27,19 @@
         </div>
         <div class="stat-card">
           <div class="stat-info">
-            <h3>{{ statistics.averageScore }}%</h3>
+            <h3>{{ convertToScore10(statistics.averageScore) }}</h3>
             <p>Điểm trung bình</p>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-info">
-            <h3>{{ statistics.highestScore }}%</h3>
+            <h3>{{ convertToScore10(statistics.highestScore) }}</h3>
             <p>Điểm cao nhất</p>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-info">
-            <h3>{{ statistics.lowestScore }}%</h3>
+            <h3>{{ convertToScore10(statistics.lowestScore) }}</h3>
             <p>Điểm thấp nhất</p>
           </div>
         </div>

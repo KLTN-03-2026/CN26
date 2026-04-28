@@ -164,18 +164,13 @@ public class ResultService {
         
         ResultDTO dto = convertToDTO(result);
         
-        // Only show answers if:
-        // 1. Result is graded AND
-        // 2. (User is teacher/admin OR exam has ended)
+        // Only show answers if user is teacher/admin
+        // Students can NEVER see detailed answers
         if (result.getStatus() == Result.Status.graded) {
-            Exam exam = result.getExam();
-            LocalDateTime now = LocalDateTime.now();
             boolean isTeacherOrAdmin = currentUser.getRole() == User.Role.teacher || 
                                       currentUser.getRole() == User.Role.admin;
-            boolean examEnded = exam.getEndTime() != null && now.isAfter(exam.getEndTime());
             
-            // Only populate answers if teacher/admin OR exam has ended
-            if (isTeacherOrAdmin || examEnded) {
+            if (isTeacherOrAdmin) {
                 List<Answer> answers = answerRepository.findByResult(result);
                 dto.setAnswers(answers.stream()
                         .map(this::convertAnswerToDTO)

@@ -20,9 +20,9 @@ public class TeacherRequestController {
     @Autowired
     private TeacherRequestService teacherRequestService;
     
-    @PostMapping
+    @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<ApiResponse<TeacherRequestDTO>> createRequest(
-            @Valid @RequestBody CreateTeacherRequestDTO request) {
+            @Valid @ModelAttribute CreateTeacherRequestDTO request) {
         TeacherRequestDTO teacherRequest = teacherRequestService.createRequest(request);
         return ResponseEntity.ok(ApiResponse.success("Gửi yêu cầu thành công", teacherRequest));
     }

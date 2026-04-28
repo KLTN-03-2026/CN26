@@ -11,7 +11,8 @@ public class TeacherRequestDTO {
     private String userName;
     private String userEmail;
     private String reason;
-    private String qualifications;
+    private String teachingCertificateUrl;
+    private String degreeUrl;
     private String status;
     private Integer reviewedById;
     private String reviewedByName;

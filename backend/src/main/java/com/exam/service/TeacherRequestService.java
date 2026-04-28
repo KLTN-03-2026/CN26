@@ -10,11 +10,19 @@ import com.exam.exception.ResourceNotFoundException;
 import com.exam.repository.TeacherRequestRepository;
 import com.exam.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +40,9 @@ public class TeacherRequestService {
     @Autowired
     private EmailService emailService;
     
+    @Value("${file.upload-dir:uploads/teacher-requests}")
+    private String uploadDir;
+    
     @Transactional
     public TeacherRequestDTO createRequest(CreateTeacherRequestDTO request) {
         User currentUser = userService.getCurrentUser();
@@ -46,14 +57,59 @@ public class TeacherRequestService {
             throw new BadRequestException("Bạn đã có yêu cầu đang chờ duyệt");
         }
         
+        // Validate files
+        if (request.getTeachingCertificate() == null || request.getTeachingCertificate().isEmpty()) {
+            throw new BadRequestException("Vui lòng tải lên chứng chỉ sư phạm");
+        }
+        if (request.getDegree() == null || request.getDegree().isEmpty()) {
+            throw new BadRequestException("Vui lòng tải lên bằng cấp");
+        }
+        
         TeacherRequest teacherRequest = new TeacherRequest();
         teacherRequest.setUser(currentUser);
         teacherRequest.setReason(request.getReason());
-        teacherRequest.setQualifications(request.getQualifications());
         teacherRequest.setStatus(TeacherRequest.Status.pending);
+        
+        // Save files
+        try {
+            String teachingCertUrl = saveFile(request.getTeachingCertificate(), "teaching-cert");
+            String degreeUrl = saveFile(request.getDegree(), "degree");
+            
+            teacherRequest.setTeachingCertificateUrl(teachingCertUrl);
+            teacherRequest.setDegreeUrl(degreeUrl);
+        } catch (IOException e) {
+            throw new BadRequestException("Lỗi khi tải lên file: " + e.getMessage());
+        }
         
         teacherRequest = teacherRequestRepository.save(teacherRequest);
         return convertToDTO(teacherRequest);
+    }
+    
+    private String saveFile(MultipartFile file, String prefix) throws IOException {
+        // Create upload directory if not exists
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        
+        // Validate file type
+        String contentType = file.getContentType();
+        if (contentType == null || (!contentType.startsWith("image/"))) {
+            throw new BadRequestException("Chỉ chấp nhận file ảnh (jpg, png, jpeg)");
+        }
+        
+        // Generate unique filename
+        String originalFilename = file.getOriginalFilename();
+        String extension = originalFilename != null && originalFilename.contains(".") 
+                ? originalFilename.substring(originalFilename.lastIndexOf("."))
+                : ".jpg";
+        String filename = prefix + "-" + UUID.randomUUID().toString() + extension;
+        
+        // Save file
+        Path filePath = uploadPath.resolve(filename);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        
+        return "/uploads/teacher-requests/" + filename;
     }
     
     public List<TeacherRequestDTO> getAllRequests() {
@@ -144,7 +200,8 @@ public class TeacherRequestService {
         dto.setUserName(request.getUser().getFullName());
         dto.setUserEmail(request.getUser().getEmail());
         dto.setReason(request.getReason());
-        dto.setQualifications(request.getQualifications());
+        dto.setTeachingCertificateUrl(request.getTeachingCertificateUrl());
+        dto.setDegreeUrl(request.getDegreeUrl());
         dto.setStatus(request.getStatus().name());
         
         if (request.getReviewedBy() != null) {

@@ -27,8 +27,11 @@ public class TeacherRequest {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String reason;
     
-    @Column(columnDefinition = "TEXT")
-    private String qualifications;
+    @Column(name = "teaching_certificate_url")
+    private String teachingCertificateUrl;
+    
+    @Column(name = "degree_url")
+    private String degreeUrl;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

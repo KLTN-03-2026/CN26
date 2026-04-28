@@ -38,10 +38,27 @@
             <strong>Lý do:</strong>
             <p>{{ request.reason }}</p>
           </div>
-          <div v-if="request.qualifications" class="info-section">
-            <strong>Bằng cấp:</strong>
-            <p>{{ request.qualifications }}</p>
+          
+          <div class="info-section">
+            <strong>Chứng chỉ sư phạm:</strong>
+            <div v-if="request.teachingCertificateUrl" class="image-preview">
+              <img :src="getImageUrl(request.teachingCertificateUrl)" 
+                   alt="Chứng chỉ sư phạm" 
+                   @click="openImageModal(getImageUrl(request.teachingCertificateUrl))">
+            </div>
+            <p v-else class="no-data">Chưa có ảnh</p>
           </div>
+          
+          <div class="info-section">
+            <strong>Bằng cấp:</strong>
+            <div v-if="request.degreeUrl" class="image-preview">
+              <img :src="getImageUrl(request.degreeUrl)" 
+                   alt="Bằng cấp"
+                   @click="openImageModal(getImageUrl(request.degreeUrl))">
+            </div>
+            <p v-else class="no-data">Chưa có ảnh</p>
+          </div>
+          
           <div class="info-section">
             <strong>Ngày gửi:</strong>
             <p>{{ formatDate(request.createdAt) }}</p>
@@ -76,6 +93,13 @@
         </div>
       </form>
     </AppModal>
+
+    <!-- Image Modal -->
+    <AppModal v-model="showImageModal" title="Xem ảnh" size="large">
+      <div class="image-modal-content">
+        <img :src="selectedImage" alt="Full size image">
+      </div>
+    </AppModal>
   </AdminLayout>
 </template>
 
@@ -98,6 +122,21 @@ const reviewingRequest = ref(null)
 const reviewAction = ref('')
 const reviewNote = ref('')
 const reviewing = ref(false)
+const showImageModal = ref(false)
+const selectedImage = ref('')
+
+// Helper function to build image URL
+const getImageUrl = (path) => {
+  if (!path) return ''
+  // In development, Vite proxy /api to http://localhost:8080
+  // So we need to use the full backend URL for static files
+  const isDev = import.meta.env.DEV
+  if (isDev) {
+    return `http://localhost:8080${path}`
+  }
+  // In production, assume same origin
+  return path
+}
 
 const filteredRequests = computed(() => {
   if (!filterStatus.value) return requests.value
@@ -148,6 +187,11 @@ const submitReview = async () => {
   } finally {
     reviewing.value = false
   }
+}
+
+const openImageModal = (imageUrl) => {
+  selectedImage.value = imageUrl
+  showImageModal.value = true
 }
 </script>
 
@@ -296,45 +340,41 @@ const submitReview = async () => {
   background: #dc2626;
 }
 
-.modal-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 25px;
+/* Shared button and modal styles moved to global style.css */
+
+.image-preview {
+  margin-top: 10px;
 }
 
-.btn-cancel {
-  padding: 12px 24px;
-  background: #f3f4f6;
-  color: #374151;
-  border: none;
+.image-preview img {
+  max-width: 300px;
+  max-height: 200px;
   border-radius: 8px;
-  font-weight: 600;
+  border: 2px solid #e5e7eb;
   cursor: pointer;
   transition: all 0.3s;
+  object-fit: cover;
 }
 
-.btn-cancel:hover {
-  background: #e5e7eb;
+.image-preview img:hover {
+  border-color: #3b82f6;
+  transform: scale(1.02);
 }
 
-.btn-save {
-  padding: 12px 24px;
-  background: #1e40af;
-  color: white;
-  border: none;
+.no-data {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.image-modal-content {
+  text-align: center;
+  padding: 20px;
+}
+
+.image-modal-content img {
+  max-width: 100%;
+  max-height: 80vh;
   border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.btn-save:hover:not(:disabled) {
-  background: #1e3a8a;
-}
-
-.btn-save:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
+  object-fit: contain;
 }
 </style>

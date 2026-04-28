@@ -77,7 +77,11 @@
             </thead>
             <tbody>
               <tr v-for="result in statistics.results" :key="result.id">
-                <td class="student-name">{{ result.studentName }}</td>
+                <td class="student-name">
+                  <a href="#" @click.prevent="viewResultDetail(result.id)" class="student-link">
+                    {{ result.studentName }}
+                  </a>
+                </td>
                 <td class="student-email">{{ result.studentEmail }}</td>
                 <td>
                   <span class="score-badge" :style="{ background: getScoreBadgeColor(result.score) }">
@@ -122,7 +126,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFormatters } from '../../composables/useFormatters'
-import examService from '../../services/examService'
+import resultService from '../../services/resultService'
 import TeacherLayout from '../../components/layouts/TeacherLayout.vue'
 import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
 import EmptyState from '../../components/common/EmptyState.vue'
@@ -164,7 +168,7 @@ const loadStatistics = async () => {
   try {
     loading.value = true
     const examId = route.params.id
-    const response = await examService.getExamStatistics(examId)
+    const response = await resultService.getExamStatistics(examId)
     if (response.success) {
       statistics.value = response.data
     }
@@ -196,6 +200,10 @@ const getProgressColor = (percentage) => {
   if (percentage >= 70) return '#10b981'
   if (percentage >= 50) return '#f59e0b'
   return '#ef4444'
+}
+
+const viewResultDetail = (resultId) => {
+  router.push(`/teacher/result/${resultId}`)
 }
 </script>
 
@@ -329,6 +337,18 @@ const getProgressColor = (percentage) => {
 .student-name {
   color: #1f2937;
   font-weight: 600;
+}
+
+.student-link {
+  color: #1e40af;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.student-link:hover {
+  color: #3b82f6;
+  text-decoration: underline;
 }
 
 .student-email {

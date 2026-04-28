@@ -87,7 +87,5 @@ watch(() => props.question, (newVal) => {
 </script>
 
 <style scoped>
-.modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 25px; }
-.btn-cancel { padding: 12px 24px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
-.btn-save { padding: 12px 24px; background: #1e40af; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+/* Shared button and modal styles moved to global style.css */
 </style>

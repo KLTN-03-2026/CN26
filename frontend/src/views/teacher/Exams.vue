@@ -236,7 +236,6 @@ const deleteExam = async (id) => {
 
 const toggleStatus = async (exam) => {
   try {
-    const newStatus = !exam.isActive
     const response = await examService.toggleExamStatus(exam.id)
     if (response.success) {
       alert('Cập nhật trạng thái thành công!')
@@ -407,45 +406,5 @@ const openCreateModal = async () => {
   color: #991b1b;
 }
 
-.modal-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 25px;
-}
-
-.btn-cancel {
-  padding: 12px 24px;
-  background: #f3f4f6;
-  color: #374151;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.btn-cancel:hover {
-  background: #e5e7eb;
-}
-
-.btn-save {
-  padding: 12px 24px;
-  background: #1e40af;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.btn-save:hover:not(:disabled) {
-  background: #1e3a8a;
-}
-
-.btn-save:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-}
+/* Shared button and modal styles moved to global style.css */
 </style>

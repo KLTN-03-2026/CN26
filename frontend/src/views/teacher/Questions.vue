@@ -423,17 +423,19 @@ const saveSelectedAIQuestions = async () => {
   try {
     const questionsToSave = selectedAIQuestions.value.map(index => aiGeneratedQuestions.value[index])
     
-    let savedCount = 0
-    for (const question of questionsToSave) {
-      try {
-        await questionService.createQuestion(question)
-        savedCount++
-      } catch (error) {
-        console.error('Error saving question:', error)
-      }
-    }
+    // Use Promise.allSettled to save in parallel
+    const results = await Promise.allSettled(
+      questionsToSave.map(question => questionService.createQuestion(question))
+    )
     
-    alert(`Đã lưu ${savedCount}/${questionsToSave.length} câu hỏi!`)
+    const savedCount = results.filter(r => r.status === 'fulfilled').length
+    const failedCount = results.filter(r => r.status === 'rejected').length
+    
+    if (failedCount > 0) {
+      alert(`Đã lưu ${savedCount}/${questionsToSave.length} câu hỏi! (${failedCount} câu lỗi)`)
+    } else {
+      alert(`Đã lưu ${savedCount}/${questionsToSave.length} câu hỏi!`)
+    }
     
     // Clear data trước khi đóng để không trigger confirm
     showAIModal.value = false
@@ -504,17 +506,19 @@ const saveSelectedImportQuestions = async () => {
   try {
     const questionsToSave = selectedImportQuestions.value.map(index => importedQuestions.value[index])
     
-    let savedCount = 0
-    for (const question of questionsToSave) {
-      try {
-        await questionService.createQuestion(question)
-        savedCount++
-      } catch (error) {
-        console.error('Error saving question:', error)
-      }
-    }
+    // Use Promise.allSettled to save in parallel
+    const results = await Promise.allSettled(
+      questionsToSave.map(question => questionService.createQuestion(question))
+    )
     
-    alert(`Đã lưu ${savedCount}/${questionsToSave.length} câu hỏi!`)
+    const savedCount = results.filter(r => r.status === 'fulfilled').length
+    const failedCount = results.filter(r => r.status === 'rejected').length
+    
+    if (failedCount > 0) {
+      alert(`Đã lưu ${savedCount}/${questionsToSave.length} câu hỏi! (${failedCount} câu lỗi)`)
+    } else {
+      alert(`Đã lưu ${savedCount}/${questionsToSave.length} câu hỏi!`)
+    }
     
     // Clear data trước khi đóng để không trigger confirm
     showImportModal.value = false
@@ -566,12 +570,7 @@ const closeCreateModal = () => {
 .filter-section { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 25px; display: flex; gap: 15px; }
 .questions-container { min-height: 400px; }
 .questions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(450px, 1fr)); gap: 20px; }
-.modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 25px; }
-.btn-cancel { padding: 12px 24px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
-.btn-cancel:hover { background: #e5e7eb; }
-.btn-save { padding: 12px 24px; background: #1e40af; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
-.btn-save:hover:not(:disabled) { background: #1e3a8a; }
-.btn-save:disabled { background: #9ca3af; cursor: not-allowed; }
+/* Shared button and modal styles moved to global style.css */
 .btn-secondary { padding: 8px 16px; background: #f3f4f6; color: #374151; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; }
 .import-guide { background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
 .import-guide h3 { color: #1e40af; margin: 0 0 15px 0; font-size: 18px; font-weight: 700; }

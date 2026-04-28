@@ -76,8 +76,11 @@ onMounted(async () => {
     }
   }
   
-  await startExam()
-  startTimer()
+  const success = await startExam()
+  // Only start timer if exam started successfully AND time remaining > 0
+  if (success && timeRemaining.value > 0) {
+    startTimer()
+  }
 })
 
 onUnmounted(() => {
@@ -88,11 +91,14 @@ const startExam = async () => {
   try {
     loading.value = true
     
-    const startResponse = await resultService.startExam(route.params.id)
-    if (startResponse.success) {
-      resultId.value = startResponse.data.id
-      if (!examStartTime.value) {
-        examStartTime.value = startResponse.data.startTime
+    // If resultId already exists in localStorage, don't call startExam again (avoid duplicate)
+    if (!resultId.value) {
+      const startResponse = await resultService.startExam(route.params.id)
+      if (startResponse.success) {
+        resultId.value = startResponse.data.id
+        if (!examStartTime.value) {
+          examStartTime.value = startResponse.data.startTime
+        }
       }
     }
     
@@ -117,11 +123,13 @@ const startExam = async () => {
     
     // Save state to localStorage
     saveState()
+    return true // Return success
   } catch (error) {
     console.error('Error starting exam:', error)
     const errorMsg = error.error || error.message || 'Không thể bắt đầu bài thi'
     alert(errorMsg)
     router.push('/student')
+    return false // Return failure
   } finally {
     loading.value = false
   }
@@ -132,6 +140,8 @@ const startTimer = () => {
     if (timeRemaining.value > 0) {
       timeRemaining.value--
     } else {
+      // Clear timer first to prevent infinite loop
+      if (timer) clearInterval(timer)
       submitExam()
     }
   }, 1000)

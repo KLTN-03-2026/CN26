@@ -1,15 +1,15 @@
 import api from './api'
 
 export default {
-  createRequest(data) {
-    return api.post('/teacher-requests', data)
+  createRequest(formData) {
+    return api.post('/teacher-requests', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
   },
   
   getMyRequests() {
-    return api.get('/teacher-requests/my')
-  },
-  
-  getMyRequest() {
     return api.get('/teacher-requests/my')
   },
   

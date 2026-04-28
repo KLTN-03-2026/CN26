@@ -3,6 +3,20 @@ import 'katex/dist/katex.min.css'
 
 export function useMathRenderer() {
   /**
+   * Escape HTML entities to prevent XSS
+   */
+  const escapeHtml = (text) => {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }
+    return text.replace(/[&<>"']/g, m => map[m])
+  }
+
+  /**
    * Render inline math expressions wrapped in $ ... $
    * Render block math expressions wrapped in $$ ... $$
    * Also handle common text patterns like sqrt(x) -> √x
@@ -10,12 +24,20 @@ export function useMathRenderer() {
   const renderMath = (text) => {
     if (!text) return ''
     
-    let result = text
+    // Escape HTML first to prevent XSS
+    let result = escapeHtml(text)
     
     // Replace block math $$ ... $$
     result = result.replace(/\$\$(.*?)\$\$/g, (match, formula) => {
       try {
-        return katex.renderToString(formula.trim(), {
+        // Unescape the formula content for KaTeX processing
+        const unescapedFormula = formula.replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#039;/g, "'")
+        
+        return katex.renderToString(unescapedFormula.trim(), {
           displayMode: true,
           throwOnError: false
         })
@@ -27,7 +49,14 @@ export function useMathRenderer() {
     // Replace inline math $ ... $
     result = result.replace(/\$(.*?)\$/g, (match, formula) => {
       try {
-        return katex.renderToString(formula.trim(), {
+        // Unescape the formula content for KaTeX processing
+        const unescapedFormula = formula.replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#039;/g, "'")
+        
+        return katex.renderToString(unescapedFormula.trim(), {
           displayMode: false,
           throwOnError: false
         })

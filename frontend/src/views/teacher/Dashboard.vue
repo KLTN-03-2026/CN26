@@ -52,7 +52,7 @@
       <div class="action-card">
         <h3>Xem Thống Kê</h3>
         <p>Phân tích kết quả thi của học sinh</p>
-        <button class="btn-action" @click="$router.push('/teacher/statistics')">
+        <button class="btn-action" @click="$router.push('/teacher/exams')">
           Xem thống kê →
         </button>
       </div>

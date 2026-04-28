@@ -178,12 +178,17 @@ const loadResults = async () => {
     loadingResults.value = true
     const response = await resultService.getMyResults()
     if (response.success) {
-      results.value = response.data.filter(r => r.status === 'graded').slice(0, 5)
-      stats.value.completedExams = response.data.filter(r => r.status === 'graded').length
-      if (results.value.length > 0) {
-        const total = results.value.reduce((sum, r) => sum + parseFloat(r.score), 0)
-        stats.value.averageScore = Math.round(total / results.value.length)
+      const gradedResults = response.data.filter(r => r.status === 'graded')
+      stats.value.completedExams = gradedResults.length
+      
+      // Calculate average score from ALL graded results
+      if (gradedResults.length > 0) {
+        const total = gradedResults.reduce((sum, r) => sum + parseFloat(r.score), 0)
+        stats.value.averageScore = Math.round(total / gradedResults.length)
       }
+      
+      // Then slice for display
+      results.value = gradedResults.slice(0, 5)
     }
   } catch (error) {
     console.error('Error loading results:', error)

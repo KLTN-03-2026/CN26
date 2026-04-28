@@ -2,11 +2,38 @@ import { defineStore } from 'pinia'
 import authService from '../services/authService'
 
 export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    user: JSON.parse(localStorage.getItem('user')) || null,
-    token: localStorage.getItem('token') || null,
-    isAuthenticated: !!localStorage.getItem('token')
-  }),
+  state: () => {
+    const token = localStorage.getItem('token')
+    let isAuthenticated = false
+    
+    // Check if token is expired
+    if (token) {
+      try {
+        // Parse JWT payload (base64 decode middle part)
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        const exp = payload.exp
+        
+        // Check if token is expired (exp is in seconds, Date.now() is in milliseconds)
+        if (exp && exp * 1000 > Date.now()) {
+          isAuthenticated = true
+        } else {
+          // Token expired, clear it
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+        }
+      } catch (e) {
+        // Invalid token format, clear it
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+      }
+    }
+    
+    return {
+      user: isAuthenticated ? JSON.parse(localStorage.getItem('user')) : null,
+      token: isAuthenticated ? token : null,
+      isAuthenticated
+    }
+  },
   
   getters: {
     isStudent: (state) => state.user?.role === 'student',

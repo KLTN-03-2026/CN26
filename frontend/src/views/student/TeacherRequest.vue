@@ -1,4 +1,4 @@
-<template>
+  <template>
   <StudentLayout activeMenu="home">
     <header class="top-header">
       <div class="header-left">
@@ -40,11 +40,41 @@
               <textarea v-model="requestForm.reason" required rows="4" 
                         placeholder="Chia sẻ lý do bạn muốn trở thành giáo viên..."></textarea>
             </div>
+            
             <div class="form-group">
-              <label>Bằng cấp, chứng chỉ</label>
-              <textarea v-model="requestForm.qualifications" rows="3"
-                        placeholder="Liệt kê các bằng cấp, chứng chỉ liên quan (nếu có)"></textarea>
+              <label>Chứng chỉ sư phạm *</label>
+              <div class="file-upload-area">
+                <input type="file" id="teachingCert" @change="handleTeachingCertChange" 
+                       accept="image/*" required class="file-input">
+                <label for="teachingCert" class="file-label">
+                  <span v-if="!teachingCertPreview" class="upload-text">
+                    📄 Chọn ảnh chứng chỉ sư phạm
+                  </span>
+                  <img v-else :src="teachingCertPreview" alt="Preview" class="preview-image">
+                </label>
+                <p v-if="requestForm.teachingCertificate" class="file-name">
+                  {{ requestForm.teachingCertificate.name }}
+                </p>
+              </div>
             </div>
+            
+            <div class="form-group">
+              <label>Bằng cấp *</label>
+              <div class="file-upload-area">
+                <input type="file" id="degree" @change="handleDegreeChange" 
+                       accept="image/*" required class="file-input">
+                <label for="degree" class="file-label">
+                  <span v-if="!degreePreview" class="upload-text">
+                    📄 Chọn ảnh bằng cấp
+                  </span>
+                  <img v-else :src="degreePreview" alt="Preview" class="preview-image">
+                </label>
+                <p v-if="requestForm.degree" class="file-name">
+                  {{ requestForm.degree.name }}
+                </p>
+              </div>
+            </div>
+            
             <button type="submit" class="btn-submit" :disabled="submitting">
               {{ submitting ? 'Đang gửi...' : 'Gửi yêu cầu' }}
             </button>
@@ -84,19 +114,46 @@ const { formatDate, getStatusText } = useFormatters()
 
 const existingRequest = ref(null)
 const submitting = ref(false)
+const teachingCertPreview = ref(null)
+const degreePreview = ref(null)
 
 const requestForm = ref({
   reason: '',
-  qualifications: ''
+  teachingCertificate: null,
+  degree: null
 })
 
 onMounted(() => {
   checkExistingRequest()
 })
 
+const handleTeachingCertChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    requestForm.value.teachingCertificate = file
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      teachingCertPreview.value = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+const handleDegreeChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    requestForm.value.degree = file
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      degreePreview.value = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
 const checkExistingRequest = async () => {
   try {
-    const response = await teacherRequestService.getMyRequest()
+    const response = await teacherRequestService.getMyRequests()
     if (response.success && response.data && response.data.length > 0) {
       // Sắp xếp theo createdAt giảm dần để lấy request mới nhất
       const sortedRequests = response.data.sort((a, b) => {
@@ -116,11 +173,31 @@ const checkExistingRequest = async () => {
 }
 
 const submitRequest = async () => {
+  if (!requestForm.value.teachingCertificate || !requestForm.value.degree) {
+    alert('Vui lòng tải lên đầy đủ chứng chỉ sư phạm và bằng cấp')
+    return
+  }
+  
   try {
     submitting.value = true
-    const response = await teacherRequestService.createRequest(requestForm.value)
+    
+    // Create FormData
+    const formData = new FormData()
+    formData.append('reason', requestForm.value.reason)
+    formData.append('teachingCertificate', requestForm.value.teachingCertificate)
+    formData.append('degree', requestForm.value.degree)
+    
+    const response = await teacherRequestService.createRequest(formData)
     if (response.success) {
       alert('Gửi yêu cầu thành công! Vui lòng chờ admin phê duyệt.')
+      // Reset form
+      requestForm.value = {
+        reason: '',
+        teachingCertificate: null,
+        degree: null
+      }
+      teachingCertPreview.value = null
+      degreePreview.value = null
       await checkExistingRequest()
     }
   } catch (error) {
@@ -226,6 +303,49 @@ const getStatusClass = (status) => {
 
 .review-note strong {
   color: #1f2937;
+}
+
+.file-upload-area {
+  margin-top: 8px;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-label {
+  display: block;
+  padding: 40px 20px;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: #f9fafb;
+}
+
+.file-label:hover {
+  border-color: #1e40af;
+  background: #eff6ff;
+}
+
+.upload-text {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.file-name {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #059669;
+  font-weight: 500;
 }
 
 .btn-submit {

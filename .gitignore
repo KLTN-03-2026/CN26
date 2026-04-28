@@ -23,6 +23,9 @@ npm-debug.log*
 .env
 .env.local
 
+# Application properties (contains sensitive data)
+backend/src/main/resources/application.properties
+
 # Temporary files
 *.tmp
 *.temp

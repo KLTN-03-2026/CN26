@@ -36,7 +36,7 @@ const routes = [
     path: '/student/profile',
     name: 'StudentProfile',
     component: () => import('../views/student/Profile.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, role: 'student' }
   },
   {
     path: '/student/exams',
@@ -60,7 +60,7 @@ const routes = [
     path: '/student/result/:id',
     name: 'ViewResult',
     component: () => import('../views/student/ViewResult.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, role: 'student' }
   },
   {
     path: '/student/teacher-request',
@@ -90,6 +90,12 @@ const routes = [
     path: '/teacher/statistics/:id',
     name: 'ExamStatistics',
     component: () => import('../views/teacher/Statistics.vue'),
+    meta: { requiresAuth: true, role: 'teacher' }
+  },
+  {
+    path: '/teacher/result/:id',
+    name: 'TeacherViewResult',
+    component: () => import('../views/teacher/ViewResultDetail.vue'),
     meta: { requiresAuth: true, role: 'teacher' }
   },
   {

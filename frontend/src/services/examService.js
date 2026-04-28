@@ -39,9 +39,5 @@ export default {
   
   toggleExamStatus(id) {
     return api.post(`/exams/${id}/toggle-status`)
-  },
-  
-  getExamStatistics(id) {
-    return api.get(`/results/exam/${id}/statistics`)
   }
 }

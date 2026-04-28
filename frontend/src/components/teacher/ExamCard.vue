@@ -29,7 +29,12 @@
       <button class="btn-action btn-toggle" @click="$emit('toggle-status', exam)">
         {{ exam.isActive ? 'Đóng' : 'Mở' }}
       </button>
-      <button class="btn-edit" @click="$emit('edit', exam)">
+      <button 
+        class="btn-edit" 
+        @click="$emit('edit', exam)"
+        :disabled="!canEditExam(exam)"
+        :title="getEditTooltip(exam)"
+      >
         Sửa
       </button>
       <button class="btn-delete" @click="$emit('delete', exam.id)">
@@ -52,6 +57,30 @@ defineProps({
 defineEmits(['view-stats', 'toggle-status', 'edit', 'delete'])
 
 const { formatDateTime } = useFormatters()
+
+const canEditExam = (exam) => {
+  // Check if exam has started
+  if (exam.startTime && new Date(exam.startTime) < new Date()) {
+    return false
+  }
+  
+  // Check if any student has taken the exam
+  if (exam.resultCount > 0) {
+    return false
+  }
+  
+  return true
+}
+
+const getEditTooltip = (exam) => {
+  if (exam.startTime && new Date(exam.startTime) < new Date()) {
+    return 'Không thể sửa đề thi đã bắt đầu'
+  }
+  if (exam.resultCount > 0) {
+    return `Không thể sửa đề thi đã có ${exam.resultCount} học sinh làm bài`
+  }
+  return 'Sửa đề thi'
+}
 
 const getExamStatusClass = (exam) => {
   if (!exam.isActive) return 'inactive'
@@ -77,11 +106,11 @@ const getExamStatusText = (exam) => {
 </script>
 
 <style scoped>
-.exam-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s; }
+.exam-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s; display: flex; flex-direction: column; min-height: 380px; }
 .exam-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
-.exam-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-.exam-header h3 { font-size: 18px; color: #1f2937; margin: 0; font-weight: 700; }
-.status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.exam-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; min-height: 50px; }
+.exam-header h3 { font-size: 18px; color: #1f2937; margin: 0; font-weight: 700; flex: 1; }
+.status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; flex-shrink: 0; margin-left: 10px; }
 .status-badge.active { background: #d1fae5; color: #065f46; }
 .status-badge.inactive { background: #f3f4f6; color: #6b7280; }
 .status-badge.upcoming { background: #dbeafe; color: #1e40af; }
@@ -94,10 +123,11 @@ const getExamStatusText = (exam) => {
 .date-item:last-child { margin-bottom: 0; }
 .date-label { color: #6b7280; }
 .date-value { color: #1f2937; font-weight: 600; }
-.exam-actions { display: flex; gap: 8px; }
-.btn-action { padding: 8px 16px; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.3s; }
+.exam-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: auto; }
+.btn-action { padding: 8px 12px; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.3s; text-align: center; white-space: nowrap; }
 .btn-stats { background: #eff6ff; color: #1e40af; }
 .btn-toggle { background: #fef3c7; color: #92400e; }
-.btn-edit { padding: 8px 16px; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; }
-.btn-delete { padding: 8px 16px; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; }
+.btn-edit { padding: 8px 12px; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; text-align: center; white-space: nowrap; }
+.btn-edit:disabled { background: #f3f4f6; color: #9ca3af; border-color: #e5e7eb; cursor: not-allowed; opacity: 0.6; }
+.btn-delete { padding: 8px 12px; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; text-align: center; white-space: nowrap; }
 </style>

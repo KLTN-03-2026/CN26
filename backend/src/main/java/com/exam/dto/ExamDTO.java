@@ -21,4 +21,5 @@ public class ExamDTO {
     private Integer createdById;
     private String createdByName;
     private LocalDateTime createdAt;
+    private Long resultCount; // Number of students who have taken this exam
 }

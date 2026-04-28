@@ -33,6 +33,9 @@ public class ExamService {
     @Autowired
     private UserService userService;
     
+    @Autowired
+    private com.exam.repository.ResultRepository resultRepository;
+    
     public List<ExamDTO> getAllExams() {
         return examRepository.findAll().stream()
                 .map(this::convertToDTO)
@@ -108,6 +111,21 @@ public class ExamService {
         return convertToDTO(exam);
     }
     
+    private boolean canEditExam(Exam exam) {
+        // Check if exam has started (if startTime is set)
+        if (exam.getStartTime() != null && exam.getStartTime().isBefore(java.time.LocalDateTime.now())) {
+            return false;
+        }
+        
+        // Check if any student has taken the exam
+        long resultCount = resultRepository.countByExam(exam);
+        if (resultCount > 0) {
+            return false;
+        }
+        
+        return true;
+    }
+    
     @Transactional
     public ExamDTO updateExam(Integer id, CreateExamRequest request) {
         Exam exam = examRepository.findById(id)
@@ -119,9 +137,9 @@ public class ExamService {
             throw new BadRequestException("Bạn không có quyền chỉnh sửa đề thi này");
         }
         
-        // Check if exam has started
-        if (exam.getStartTime() != null && exam.getStartTime().isBefore(java.time.LocalDateTime.now())) {
-            throw new BadRequestException("Không thể sửa bài thi vì bài thi đã bắt đầu");
+        // Check if exam can be edited
+        if (!canEditExam(exam)) {
+            throw new BadRequestException("Không thể sửa đề thi đã có học sinh làm bài hoặc đã bắt đầu");
         }
         
         // Update exam info
@@ -227,6 +245,7 @@ public class ExamService {
         dto.setCreatedById(exam.getCreatedBy().getId());
         dto.setCreatedByName(exam.getCreatedBy().getFullName());
         dto.setCreatedAt(exam.getCreatedAt());
+        dto.setResultCount(resultRepository.countByExam(exam));
         return dto;
     }
 }

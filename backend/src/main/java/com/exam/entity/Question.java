@@ -45,6 +45,10 @@ public class Question {
     @Column(nullable = false)
     private Level level = Level.medium;
     
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Source source = Source.manual;
+    
     private String subject;
     
     @Column(columnDefinition = "TEXT")
@@ -69,5 +73,9 @@ public class Question {
     
     public enum Level {
         easy, medium, hard
+    }
+    
+    public enum Source {
+        manual, word, ai
     }
 }

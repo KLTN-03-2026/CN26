@@ -44,6 +44,31 @@ public class QuestionService {
                 .collect(Collectors.toList());
     }
     
+    public List<QuestionDTO> getMyQuestionsWithFilters(String source, String sortOrder) {
+        User currentUser = userService.getCurrentUser();
+        
+        Question.Source sourceEnum = null;
+        if (source != null && !source.isEmpty()) {
+            try {
+                sourceEnum = Question.Source.valueOf(source);
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException("Nguồn không hợp lệ: " + source);
+            }
+        }
+        
+        if (sortOrder == null || sortOrder.isEmpty()) {
+            sortOrder = "newest";
+        }
+        
+        if (!sortOrder.equals("newest") && !sortOrder.equals("oldest")) {
+            throw new BadRequestException("Thứ tự sắp xếp không hợp lệ: " + sortOrder);
+        }
+        
+        return questionRepository.findByCreatedByWithFilters(currentUser, sourceEnum, sortOrder).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+    
     public QuestionDTO getQuestionById(Integer id) {
         Question question = questionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Câu hỏi không tồn tại"));
@@ -77,6 +102,7 @@ public class QuestionService {
         question.setLevel(Question.Level.valueOf(request.getLevel()));
         question.setSubject(request.getSubject());
         question.setExplanation(request.getExplanation());
+        question.setSource(Question.Source.manual);
         question.setCreatedBy(currentUser);
         
         question = questionRepository.save(question);
@@ -144,6 +170,64 @@ public class QuestionService {
                 .collect(Collectors.toList());
     }
     
+    @Transactional
+    public List<QuestionDTO> saveAIGeneratedQuestions(List<CreateQuestionRequest> questions) {
+        User currentUser = userService.getCurrentUser();
+        
+        List<Question> questionEntities = questions.stream()
+                .map(req -> {
+                    Question question = new Question();
+                    question.setContent(req.getContent());
+                    question.setOptionA(req.getOptionA());
+                    question.setOptionB(req.getOptionB());
+                    question.setOptionC(req.getOptionC());
+                    question.setOptionD(req.getOptionD());
+                    question.setCorrectAnswer(Question.Answer.valueOf(req.getCorrectAnswer()));
+                    question.setLevel(Question.Level.valueOf(req.getLevel()));
+                    question.setSubject(req.getSubject());
+                    question.setExplanation(req.getExplanation());
+                    question.setSource(Question.Source.ai);
+                    question.setCreatedBy(currentUser);
+                    return question;
+                })
+                .collect(Collectors.toList());
+        
+        questionEntities = questionRepository.saveAll(questionEntities);
+        
+        return questionEntities.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+    
+    @Transactional
+    public List<QuestionDTO> saveWordQuestions(List<CreateQuestionRequest> questions) {
+        User currentUser = userService.getCurrentUser();
+        
+        List<Question> questionEntities = questions.stream()
+                .map(req -> {
+                    Question question = new Question();
+                    question.setContent(req.getContent());
+                    question.setOptionA(req.getOptionA());
+                    question.setOptionB(req.getOptionB());
+                    question.setOptionC(req.getOptionC());
+                    question.setOptionD(req.getOptionD());
+                    question.setCorrectAnswer(Question.Answer.valueOf(req.getCorrectAnswer()));
+                    question.setLevel(Question.Level.valueOf(req.getLevel()));
+                    question.setSubject(req.getSubject());
+                    question.setExplanation(req.getExplanation());
+                    question.setSource(Question.Source.word);
+                    question.setCreatedBy(currentUser);
+                    return question;
+                })
+                .collect(Collectors.toList());
+        
+        questionEntities = questionRepository.saveAll(questionEntities);
+        
+        return questionEntities.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+    
     // Parse Word file only, don't save to database
     public List<CreateQuestionRequest> parseWordFile(MultipartFile file) {
         return wordImportService.parseWordFile(file);
@@ -169,6 +253,7 @@ public class QuestionService {
                     question.setLevel(Question.Level.valueOf(req.getLevel()));
                     question.setSubject(req.getSubject());
                     question.setExplanation(req.getExplanation());
+                    question.setSource(Question.Source.word);
                     question.setCreatedBy(currentUser);
                     return question;
                 })
@@ -191,6 +276,7 @@ public class QuestionService {
         dto.setOptionD(question.getOptionD());
         dto.setCorrectAnswer(question.getCorrectAnswer().name());
         dto.setLevel(question.getLevel().name());
+        dto.setSource(question.getSource().name());
         dto.setSubject(question.getSubject());
         dto.setExplanation(question.getExplanation());
         dto.setCreatedById(question.getCreatedBy().getId());

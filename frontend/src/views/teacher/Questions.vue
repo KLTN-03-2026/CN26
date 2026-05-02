@@ -1,24 +1,36 @@
 <template>
   <TeacherLayout activeMenu="questions">
-    <header class="top-header">
-      <div class="header-left">
-        <h1>Quản Lý Câu Hỏi</h1>
-      </div>
-      <div class="header-actions">
-        <button class="btn-action" @click="showImportModal = true">Nhập từ Word</button>
-        <button class="btn-action" @click="showAIModal = true">Tạo bằng AI</button>
-        <button class="btn-primary" @click="showCreateModal = true">Tạo câu hỏi</button>
-      </div>
-    </header>
+    <div class="sticky-header">
+      <header class="top-header">
+        <div class="header-left">
+          <h1>Quản Lý Câu Hỏi</h1>
+        </div>
+        <div class="header-actions">
+          <button class="btn-action" @click="showImportModal = true">Nhập từ Word</button>
+          <button class="btn-action" @click="showAIModal = true">Tạo bằng AI</button>
+          <button class="btn-primary" @click="showCreateModal = true">Tạo câu hỏi</button>
+        </div>
+      </header>
 
-    <div class="filter-section">
-      <input v-model="searchQuery" type="text" placeholder="Tìm kiếm câu hỏi..." class="search-input">
-      <select v-model="filterLevel" class="filter-select">
-        <option value="">Tất cả độ khó</option>
-        <option value="easy">Dễ</option>
-        <option value="medium">Trung bình</option>
-        <option value="hard">Khó</option>
-      </select>
+      <div class="filter-section">
+        <input v-model="searchQuery" type="text" placeholder="Tìm kiếm câu hỏi..." class="search-input">
+        <select v-model="filterLevel" class="filter-select">
+          <option value="">Tất cả độ khó</option>
+          <option value="easy">Dễ</option>
+          <option value="medium">Trung bình</option>
+          <option value="hard">Khó</option>
+        </select>
+        <select v-model="filterSource" class="filter-select" @change="applyFilters">
+          <option value="">Tất cả nguồn</option>
+          <option value="manual">Thủ công</option>
+          <option value="word">Word Import</option>
+          <option value="ai">AI</option>
+        </select>
+        <select v-model="sortOrder" class="filter-select" @change="applyFilters">
+          <option value="newest">Mới nhất</option>
+          <option value="oldest">Cũ nhất</option>
+        </select>
+      </div>
     </div>
 
     <div class="questions-container">
@@ -31,16 +43,26 @@
         @action="showCreateModal = true"
       />
 
-      <div v-else class="questions-grid">
-        <QuestionCard
-          v-for="question in filteredQuestions"
-          :key="question.id"
-          :question="question"
-          @edit="editQuestion"
-          @delete="deleteQuestion"
+      <div v-else>
+        <div class="questions-grid">
+          <QuestionCard
+            v-for="question in paginatedQuestions"
+            :key="question.id"
+            :question="question"
+            @edit="editQuestion"
+            @delete="deleteQuestion"
+          />
+        </div>
+
+        <Pagination
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          @change="changePage"
         />
       </div>
     </div>
+
+    <ScrollToTop />
 
     <!-- Create/Edit Modal -->
     <AppModal v-model="showCreateModal" :title="editingQuestion ? 'Sửa Câu Hỏi' : 'Tạo Câu Hỏi Mới'">
@@ -287,6 +309,8 @@ import EmptyState from '../../components/common/EmptyState.vue'
 import AppModal from '../../components/common/AppModal.vue'
 import QuestionCard from '../../components/teacher/QuestionCard.vue'
 import MathText from '../../components/common/MathText.vue'
+import Pagination from '../../components/common/Pagination.vue'
+import ScrollToTop from '../../components/common/ScrollToTop.vue'
 
 const { getLevelText } = useFormatters()
 
@@ -294,6 +318,10 @@ const questions = ref([])
 const loading = ref(false)
 const searchQuery = ref('')
 const filterLevel = ref('')
+const filterSource = ref('')
+const sortOrder = ref('newest')
+const currentPage = ref(1)
+const itemsPerPage = 10
 
 const showCreateModal = ref(false)
 const showAIModal = ref(false)
@@ -331,6 +359,21 @@ const filteredQuestions = computed(() => {
   })
 })
 
+const totalPages = computed(() => {
+  return Math.ceil(filteredQuestions.value.length / itemsPerPage)
+})
+
+const paginatedQuestions = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredQuestions.value.slice(start, end)
+})
+
+const changePage = (page) => {
+  currentPage.value = page
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 onMounted(() => {
   loadQuestions()
 })
@@ -338,7 +381,10 @@ onMounted(() => {
 const loadQuestions = async () => {
   try {
     loading.value = true
-    const response = await questionService.getMyQuestions()
+    const response = await questionService.getMyQuestions({
+      source: filterSource.value || undefined,
+      sortOrder: sortOrder.value
+    })
     if (response.success) {
       questions.value = response.data
     }
@@ -347,6 +393,11 @@ const loadQuestions = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const applyFilters = () => {
+  currentPage.value = 1
+  loadQuestions()
 }
 
 const saveQuestion = async () => {
@@ -423,18 +474,10 @@ const saveSelectedAIQuestions = async () => {
   try {
     const questionsToSave = selectedAIQuestions.value.map(index => aiGeneratedQuestions.value[index])
     
-    // Use Promise.allSettled to save in parallel
-    const results = await Promise.allSettled(
-      questionsToSave.map(question => questionService.createQuestion(question))
-    )
+    const response = await questionService.saveAIQuestions(questionsToSave)
     
-    const savedCount = results.filter(r => r.status === 'fulfilled').length
-    const failedCount = results.filter(r => r.status === 'rejected').length
-    
-    if (failedCount > 0) {
-      alert(`Đã lưu ${savedCount}/${questionsToSave.length} câu hỏi! (${failedCount} câu lỗi)`)
-    } else {
-      alert(`Đã lưu ${savedCount}/${questionsToSave.length} câu hỏi!`)
+    if (response.success) {
+      alert(`Đã lưu ${questionsToSave.length} câu hỏi!`)
     }
     
     // Clear data trước khi đóng để không trigger confirm
@@ -506,18 +549,10 @@ const saveSelectedImportQuestions = async () => {
   try {
     const questionsToSave = selectedImportQuestions.value.map(index => importedQuestions.value[index])
     
-    // Use Promise.allSettled to save in parallel
-    const results = await Promise.allSettled(
-      questionsToSave.map(question => questionService.createQuestion(question))
-    )
+    const response = await questionService.saveWordQuestions(questionsToSave)
     
-    const savedCount = results.filter(r => r.status === 'fulfilled').length
-    const failedCount = results.filter(r => r.status === 'rejected').length
-    
-    if (failedCount > 0) {
-      alert(`Đã lưu ${savedCount}/${questionsToSave.length} câu hỏi! (${failedCount} câu lỗi)`)
-    } else {
-      alert(`Đã lưu ${savedCount}/${questionsToSave.length} câu hỏi!`)
+    if (response.success) {
+      alert(`Đã lưu ${questionsToSave.length} câu hỏi!`)
     }
     
     // Clear data trước khi đóng để không trigger confirm
@@ -562,6 +597,15 @@ const closeCreateModal = () => {
 </script>
 
 <style scoped>
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #f5f7fa;
+  padding-bottom: 20px;
+  margin-bottom: 5px;
+}
+
 .header-actions { display: flex; gap: 12px; }
 .btn-action { padding: 10px 20px; background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 14px; }
 .btn-action:hover { background: #e5e7eb; }

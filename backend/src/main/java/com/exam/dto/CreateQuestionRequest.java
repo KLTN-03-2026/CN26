@@ -1,4 +1,4 @@
-package com.exam.dto;
+    package com.exam.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,6 +27,8 @@ public class CreateQuestionRequest {
     
     @NotNull(message = "Độ khó không được để trống")
     private String level; // easy, medium, hard
+    
+    private String source; // manual, word, ai (default: manual)
     
     private String subject;
     private String explanation;

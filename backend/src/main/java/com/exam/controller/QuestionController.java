@@ -30,8 +30,15 @@ public class QuestionController {
     
     @GetMapping("/my")
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
-    public ResponseEntity<ApiResponse<List<QuestionDTO>>> getMyQuestions() {
-        List<QuestionDTO> questions = questionService.getMyQuestions();
+    public ResponseEntity<ApiResponse<List<QuestionDTO>>> getMyQuestions(
+            @RequestParam(required = false) String source,
+            @RequestParam(required = false) String sortOrder) {
+        List<QuestionDTO> questions;
+        if (source != null || sortOrder != null) {
+            questions = questionService.getMyQuestionsWithFilters(source, sortOrder);
+        } else {
+            questions = questionService.getMyQuestions();
+        }
         return ResponseEntity.ok(ApiResponse.success(questions));
     }
     
@@ -101,5 +108,21 @@ public class QuestionController {
             @RequestParam("file") MultipartFile file) {
         List<QuestionDTO> questions = questionService.importQuestionsFromWord(file);
         return ResponseEntity.ok(ApiResponse.success("Import câu hỏi từ Word thành công", questions));
+    }
+    
+    @PostMapping("/save-ai-questions")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<List<QuestionDTO>>> saveAIGeneratedQuestions(
+            @Valid @RequestBody List<CreateQuestionRequest> questions) {
+        List<QuestionDTO> savedQuestions = questionService.saveAIGeneratedQuestions(questions);
+        return ResponseEntity.ok(ApiResponse.success("Lưu câu hỏi AI thành công", savedQuestions));
+    }
+    
+    @PostMapping("/save-word-questions")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<List<QuestionDTO>>> saveWordQuestions(
+            @Valid @RequestBody List<CreateQuestionRequest> questions) {
+        List<QuestionDTO> savedQuestions = questionService.saveWordQuestions(questions);
+        return ResponseEntity.ok(ApiResponse.success("Lưu câu hỏi Word thành công", savedQuestions));
     }
 }

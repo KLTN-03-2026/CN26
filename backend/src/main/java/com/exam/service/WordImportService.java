@@ -75,6 +75,7 @@ public class WordImportService {
                         String content = text.replaceFirst("^Câu\\s*\\d+\\s*:\\s*", "").trim();
                         currentQuestion.setContent(content);
                         currentQuestion.setLevel("medium");
+                        currentQuestion.setSubject("Chưa phân loại");
                         System.out.println("→ Bắt đầu câu hỏi mới: " + content);
                     }
 

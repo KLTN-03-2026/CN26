@@ -5,8 +5,8 @@ export default {
     return api.get('/questions')
   },
   
-  getMyQuestions() {
-    return api.get('/questions/my')
+  getMyQuestions(params) {
+    return api.get('/questions/my', { params })
   },
   
   getQuestionById(id) {
@@ -55,5 +55,13 @@ export default {
         'Content-Type': 'multipart/form-data'
       }
     })
+  },
+  
+  saveAIQuestions(questions) {
+    return api.post('/questions/save-ai-questions', questions)
+  },
+  
+  saveWordQuestions(questions) {
+    return api.post('/questions/save-word-questions', questions)
   }
 }

@@ -14,6 +14,7 @@ public class QuestionDTO {
     private String optionD;
     private String correctAnswer;
     private String level;
+    private String source;
     private String subject;
     private String explanation;
     private Integer createdById;

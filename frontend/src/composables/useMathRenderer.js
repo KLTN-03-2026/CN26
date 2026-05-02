@@ -17,9 +17,23 @@ export function useMathRenderer() {
   }
 
   /**
-   * Render inline math expressions wrapped in $ ... $
-   * Render block math expressions wrapped in $$ ... $$
-   * Also handle common text patterns like sqrt(x) -> √x
+   * Unescape HTML entities for KaTeX processing
+   */
+  const unescapeHtml = (text) => {
+    return text.replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+  }
+
+  /**
+   * Render math expressions with KaTeX
+   * Supports multiple LaTeX delimiters:
+   * - \[...\] for display math (block)
+   * - $$...$$ for display math (block)
+   * - \(...\) for inline math
+   * - $...$ for inline math
    */
   const renderMath = (text) => {
     if (!text) return ''
@@ -27,45 +41,63 @@ export function useMathRenderer() {
     // Escape HTML first to prevent XSS
     let result = escapeHtml(text)
     
-    // Replace block math $$ ... $$
-    result = result.replace(/\$\$(.*?)\$\$/g, (match, formula) => {
+    // 1. Replace LaTeX display math \[ ... \] (process first to avoid conflicts)
+    result = result.replace(/\\\[([\s\S]*?)\\\]/g, (match, formula) => {
       try {
-        // Unescape the formula content for KaTeX processing
-        const unescapedFormula = formula.replace(/&amp;/g, '&')
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/&quot;/g, '"')
-          .replace(/&#039;/g, "'")
-        
+        const unescapedFormula = unescapeHtml(formula)
         return katex.renderToString(unescapedFormula.trim(), {
           displayMode: true,
           throwOnError: false
         })
       } catch (e) {
+        console.error('KaTeX render error for \\[...\\]:', e)
         return match
       }
     })
     
-    // Replace inline math $ ... $
-    result = result.replace(/\$(.*?)\$/g, (match, formula) => {
+    // 2. Replace block math $$ ... $$
+    result = result.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
       try {
-        // Unescape the formula content for KaTeX processing
-        const unescapedFormula = formula.replace(/&amp;/g, '&')
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/&quot;/g, '"')
-          .replace(/&#039;/g, "'")
-        
+        const unescapedFormula = unescapeHtml(formula)
+        return katex.renderToString(unescapedFormula.trim(), {
+          displayMode: true,
+          throwOnError: false
+        })
+      } catch (e) {
+        console.error('KaTeX render error for $$...$$:', e)
+        return match
+      }
+    })
+    
+    // 3. Replace LaTeX inline math \( ... \)
+    result = result.replace(/\\\((.*?)\\\)/g, (match, formula) => {
+      try {
+        const unescapedFormula = unescapeHtml(formula)
         return katex.renderToString(unescapedFormula.trim(), {
           displayMode: false,
           throwOnError: false
         })
       } catch (e) {
+        console.error('KaTeX render error for \\(...\\):', e)
         return match
       }
     })
     
-    // Handle common text patterns (fallback if no $ delimiters)
+    // 4. Replace inline math $ ... $
+    result = result.replace(/\$(.*?)\$/g, (match, formula) => {
+      try {
+        const unescapedFormula = unescapeHtml(formula)
+        return katex.renderToString(unescapedFormula.trim(), {
+          displayMode: false,
+          throwOnError: false
+        })
+      } catch (e) {
+        console.error('KaTeX render error for $...$:', e)
+        return match
+      }
+    })
+    
+    // Handle common text patterns (fallback if no delimiters)
     if (!result.includes('katex')) {
       // Replace sqrt(x) with √x
       result = result.replace(/sqrt\(([^)]+)\)/g, '√($1)')
@@ -104,7 +136,7 @@ export function useMathRenderer() {
     })
     
     // Wrap expressions with sqrt
-    result = result.replace(/sqrt\([^)]+\)/g, match => {
+    result = result.replace(/sqrt\([^)]+\)/g, (match) => {
       if (!match.startsWith('$')) {
         return `$\\${match.replace('sqrt', 'sqrt')}$`
       }

@@ -21,16 +21,13 @@
         <input 
           type="email" 
           v-model="formData.email" 
-          placeholder="example@university.edu" 
+          placeholder="example@gmail.com" 
           required
         />
       </div>
 
       <div class="form-group">
-        <div class="label-row">
-          <label>Mật khẩu</label>
-          <a href="#" class="forgot-link">Quên mật khẩu?</a>
-        </div>
+        <label>Mật khẩu</label>
         <div class="password-input">
           <input 
             :type="showPassword ? 'text' : 'password'"
@@ -42,6 +39,7 @@
             {{ showPassword ? 'Ẩn' : 'Hiện' }}
           </button>
         </div>
+        <router-link to="/forgot-password" class="forgot-link">Quên mật khẩu?</router-link>
       </div>
 
       <button type="submit" class="btn-submit" :disabled="loading">
@@ -169,16 +167,12 @@ const handleSubmit = () => {
   gap: 8px;
 }
 
-.label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .form-group label {
   font-size: 14px;
   color: #374151;
   font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
 }
 
 .forgot-link {
@@ -186,6 +180,8 @@ const handleSubmit = () => {
   color: #1e40af;
   text-decoration: none;
   font-weight: 600;
+  display: inline-block;
+  margin-top: 8px;
 }
 
 .forgot-link:hover {

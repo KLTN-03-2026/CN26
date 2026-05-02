@@ -36,7 +36,7 @@ public class EmailService {
     
     public void sendPasswordResetEmail(String toEmail, String token) {
         String subject = "Đặt lại mật khẩu - Hệ thống thi trực tuyến";
-        String resetUrl = baseUrl + "/reset-password?token=" + token;
+        String resetUrl = frontendUrl + "/reset-password?token=" + token;
         String message = "Xin chào,\n\n" +
                 "Bạn đã yêu cầu đặt lại mật khẩu. Vui lòng click vào link dưới đây:\n\n" +
                 resetUrl + "\n\n" +

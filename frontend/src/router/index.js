@@ -27,6 +27,16 @@ const routes = [
     component: () => import('../views/auth/ResendVerification.vue')
   },
   {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('../views/auth/ForgotPassword.vue')
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: () => import('../views/auth/ResetPassword.vue')
+  },
+  {
     path: '/student',
     name: 'StudentDashboard',
     component: () => import('../views/student/Dashboard.vue'),

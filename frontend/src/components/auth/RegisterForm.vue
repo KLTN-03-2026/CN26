@@ -33,7 +33,7 @@
           <input 
             type="email" 
             v-model="formData.email" 
-            placeholder="student@example.com" 
+            placeholder="example@gmail.com" 
             required
           />
         </div>

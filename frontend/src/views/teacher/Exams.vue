@@ -84,7 +84,9 @@
               <input type="checkbox" 
                      :value="question.id" 
                      v-model="selectedQuestions">
-              <span class="question-content">{{ question.content }}</span>
+              <span class="question-content">
+                <MathText :text="question.content" :auto-wrap="true" />
+              </span>
               <span :class="['level-badge', 'level-' + question.level]">
                 {{ getLevelText(question.level) }}
               </span>
@@ -114,6 +116,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
 import EmptyState from '../../components/common/EmptyState.vue'
 import AppModal from '../../components/common/AppModal.vue'
 import ExamCard from '../../components/teacher/ExamCard.vue'
+import MathText from '../../components/common/MathText.vue'
 
 const router = useRouter()
 const { formatDateTime, getLevelText } = useFormatters()

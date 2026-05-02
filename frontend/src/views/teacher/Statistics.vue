@@ -105,7 +105,9 @@
         <div v-else class="questions-analysis">
           <div v-for="question in statistics.questionAnalysis" :key="question.questionId" class="analysis-item">
             <div class="analysis-header">
-              <p class="question-content">{{ question.content }}</p>
+              <p class="question-content">
+                <MathText :text="question.content" :auto-wrap="true" />
+              </p>
               <div class="analysis-percentage">{{ question.correctPercentage }}%</div>
             </div>
             <div class="analysis-details">
@@ -130,6 +132,7 @@ import resultService from '../../services/resultService'
 import TeacherLayout from '../../components/layouts/TeacherLayout.vue'
 import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
 import EmptyState from '../../components/common/EmptyState.vue'
+import MathText from '../../components/common/MathText.vue'
 
 const route = useRoute()
 const router = useRouter()

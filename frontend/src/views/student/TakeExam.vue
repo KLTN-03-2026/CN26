@@ -56,6 +56,7 @@ const timeRemaining = ref(0)
 const resultId = ref(null)
 const examStartTime = ref(null)
 let timer = null
+let warningShown = ref(false)
 
 const STORAGE_KEY = computed(() => `exam_${route.params.id}_state`)
 
@@ -139,6 +140,12 @@ const startTimer = () => {
   timer = setInterval(() => {
     if (timeRemaining.value > 0) {
       timeRemaining.value--
+      
+      // Show warning when 5 minutes remaining
+      if (timeRemaining.value === 300 && !warningShown.value) {
+        warningShown.value = true
+        alert('⚠️ Cảnh báo: Còn 5 phút nữa là hết giờ làm bài!')
+      }
     } else {
       // Clear timer first to prevent infinite loop
       if (timer) clearInterval(timer)
@@ -207,7 +214,7 @@ const submitExam = async () => {
       // Clear saved state after successful submit
       localStorage.removeItem(STORAGE_KEY.value)
       alert('Nộp bài thành công!')
-      router.push(`/student/result/${resultId.value}`)
+      router.push('/student/results')
     }
   } catch (error) {
     console.error('Error submitting exam:', error)

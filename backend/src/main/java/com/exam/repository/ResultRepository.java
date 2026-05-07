@@ -15,6 +15,8 @@ import java.util.Optional;
 @Repository
 public interface ResultRepository extends JpaRepository<Result, Integer> {
     
+    List<Result> findByUserOrderByStartTimeDesc(User user);
+    
     List<Result> findByUser(User user);
     
     List<Result> findByExam(Exam exam);
@@ -24,6 +26,8 @@ public interface ResultRepository extends JpaRepository<Result, Integer> {
     Optional<Result> findByUserAndExamAndStatus(User user, Exam exam, Result.Status status);
     
     List<Result> findByUserAndStatus(User user, Result.Status status);
+    
+    List<Result> findByExamAndStatusOrderBySubmitTimeDesc(Exam exam, Result.Status status);
     
     List<Result> findByExamAndStatus(Exam exam, Result.Status status);
     

@@ -196,13 +196,7 @@ const openImageModal = (imageUrl) => {
 </script>
 
 <style scoped>
-.filter-section {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  margin-bottom: 25px;
-}
+/* .filter-section, .status-badge, .status-pending/approved/rejected → sử dụng từ global style.css */
 
 .requests-grid {
   display: grid;
@@ -236,28 +230,6 @@ const openImageModal = (imageUrl) => {
   font-size: 14px;
   color: #6b7280;
   margin: 0;
-}
-
-.status-badge {
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.status-badge.status-pending {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status-badge.status-approved {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.status-badge.status-rejected {
-  background: #fee2e2;
-  color: #991b1b;
 }
 
 .request-body {

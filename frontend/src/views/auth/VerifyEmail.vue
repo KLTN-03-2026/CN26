@@ -127,11 +127,7 @@ const goToLogin = () => {
   animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+/* @keyframes spin is in global style.css */
 
 .success-icon,
 .error-icon {

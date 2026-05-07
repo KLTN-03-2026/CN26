@@ -136,7 +136,5 @@ const getActivityClass = (score) => {
   margin: 0 auto 12px;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+/* @keyframes spin is in global style.css */
 </style>

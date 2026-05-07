@@ -146,7 +146,7 @@ public class ResultService {
     
     public List<ResultDTO> getMyResults() {
         User currentUser = userService.getCurrentUser();
-        return resultRepository.findByUser(currentUser).stream()
+        return resultRepository.findByUserOrderByStartTimeDesc(currentUser).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -199,7 +199,7 @@ public class ResultService {
         Exam exam = examRepository.findById(examId)
                 .orElseThrow(() -> new ResourceNotFoundException("Đề thi không tồn tại"));
         
-        return resultRepository.findByExamAndStatus(exam, Result.Status.graded).stream()
+        return resultRepository.findByExamAndStatusOrderBySubmitTimeDesc(exam, Result.Status.graded).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }

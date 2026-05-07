@@ -113,20 +113,20 @@ public class TeacherRequestService {
     }
     
     public List<TeacherRequestDTO> getAllRequests() {
-        return teacherRequestRepository.findAll().stream()
+        return teacherRequestRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
     
     public List<TeacherRequestDTO> getPendingRequests() {
-        return teacherRequestRepository.findByStatus(TeacherRequest.Status.pending).stream()
+        return teacherRequestRepository.findByStatusOrderByCreatedAtDesc(TeacherRequest.Status.pending).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
     
     public List<TeacherRequestDTO> getMyRequests() {
         User currentUser = userService.getCurrentUser();
-        return teacherRequestRepository.findByUser(currentUser).stream()
+        return teacherRequestRepository.findByUserOrderByCreatedAtDesc(currentUser).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }

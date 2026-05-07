@@ -11,7 +11,13 @@ import java.util.Optional;
 @Repository
 public interface TeacherRequestRepository extends JpaRepository<TeacherRequest, Integer> {
     
+    List<TeacherRequest> findAllByOrderByCreatedAtDesc();
+    
+    List<TeacherRequest> findByStatusOrderByCreatedAtDesc(TeacherRequest.Status status);
+    
     List<TeacherRequest> findByStatus(TeacherRequest.Status status);
+    
+    List<TeacherRequest> findByUserOrderByCreatedAtDesc(User user);
     
     List<TeacherRequest> findByUser(User user);
     

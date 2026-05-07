@@ -37,20 +37,20 @@ public class ExamService {
     private com.exam.repository.ResultRepository resultRepository;
     
     public List<ExamDTO> getAllExams() {
-        return examRepository.findAll().stream()
+        return examRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
     
     public List<ExamDTO> getActiveExams() {
-        return examRepository.findByIsActive(true).stream()
+        return examRepository.findByIsActiveOrderByCreatedAtDesc(true).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
     
     public List<ExamDTO> getMyExams() {
         User currentUser = userService.getCurrentUser();
-        return examRepository.findByCreatedBy(currentUser).stream()
+        return examRepository.findByCreatedByOrderByCreatedAtDesc(currentUser).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -62,7 +62,7 @@ public class ExamService {
     }
     
     public List<ExamDTO> getExamsBySubject(String subject) {
-        return examRepository.findBySubject(subject).stream()
+        return examRepository.findBySubjectOrderByCreatedAtDesc(subject).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }

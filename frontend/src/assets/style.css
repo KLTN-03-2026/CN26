@@ -4,6 +4,34 @@
   box-sizing: border-box;
 }
 
+/* ========================================
+   RESPONSIVE BREAKPOINTS & VARIABLES
+   ======================================== */
+:root {
+  /* Breakpoints */
+  --breakpoint-mobile-s: 480px;
+  --breakpoint-mobile: 768px;
+  --breakpoint-tablet: 1024px;
+  --breakpoint-desktop: 1280px;
+  
+  /* Sidebar widths */
+  --sidebar-width-desktop: 280px;
+  --sidebar-width-tablet: 80px;
+  
+  /* Touch targets */
+  --touch-target-min: 44px;
+  
+  /* Z-index layers */
+  --z-backdrop: 1000;
+  --z-sidebar: 1001;
+  --z-modal: 1002;
+  
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.4s ease;
+}
+
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #f5f7fa;
@@ -39,7 +67,7 @@ body {
   align-items: center;
 }
 
-/* Buttons */
+/* Buttons - Consolidated */
 button {
   padding: 10px 20px;
   border: none;
@@ -54,8 +82,13 @@ button {
   color: white;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background: #5568d3;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-secondary {
@@ -87,34 +120,7 @@ button {
   margin-bottom: 20px;
 }
 
-/* Forms */
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  color: #333;
-  font-weight: 500;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 14px;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: #667eea;
-}
+/* Forms - Consolidated (see detailed styles below) */
 
 /* Auth Container */
 .auth-container {
@@ -168,7 +174,7 @@ table th {
   color: #333;
 }
 
-/* Badge */
+/* Badge - Consolidated */
 .badge {
   display: inline-block;
   padding: 5px 10px;
@@ -177,9 +183,23 @@ table th {
   margin-right: 5px;
 }
 
-.badge-easy { background: #d1fae5; color: #065f46; }
-.badge-medium { background: #fef3c7; color: #92400e; }
-.badge-hard { background: #fee2e2; color: #991b1b; }
+.badge-easy,
+.level-easy {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.badge-medium,
+.level-medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-hard,
+.level-hard {
+  background: #fee2e2;
+  color: #991b1b;
+}
 
 /* Utility */
 .text-center {
@@ -445,17 +465,7 @@ table th {
   margin-bottom: 15px;
 }
 
-.btn-create {
-  padding: 10px 20px;
-  background: #1e40af;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* Button Styles */
+/* Button Styles - Consolidated with main button section above */
 .btn-action {
   padding: 10px 20px;
   background: #1e40af;
@@ -467,8 +477,18 @@ table th {
   transition: all 0.3s;
 }
 
-.btn-action:hover {
+.btn-action:hover:not(:disabled) {
   background: #1e3a8a;
+}
+
+.btn-create {
+  padding: 10px 20px;
+  background: #1e40af;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .btn-edit {
@@ -503,28 +523,7 @@ table th {
   background: #fecaca;
 }
 
-/* Level Badges */
-.level-badge {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.level-easy {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.level-medium {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.level-hard {
-  background: #fee2e2;
-  color: #991b1b;
-}
+/* Level Badges - Removed (consolidated with .badge above) */
 
 /* Score Classes */
 .stat-value.excellent {
@@ -586,6 +585,17 @@ table th {
   border-color: #1e40af;
 }
 
+.filter-section {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 25px;
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
   .stats-grid {
@@ -603,13 +613,37 @@ table th {
     gap: 10px;
   }
   
-  .sidebar {
-    transform: translateX(-100%);
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
   
+  .top-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+  
+  .header-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
   .main-content {
-    margin-left: 0;
-    padding: 20px;
+    padding: 15px;
+  }
+  
+  .top-header {
+    padding: 15px 20px;
+  }
+  
+  .header-left h1 {
+    font-size: 22px;
   }
 }
 

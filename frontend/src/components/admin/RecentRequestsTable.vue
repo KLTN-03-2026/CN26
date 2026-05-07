@@ -31,7 +31,7 @@
             <td class="user-email">{{ request.userEmail }}</td>
             <td>{{ formatDate(request.createdAt) }}</td>
             <td>
-              <span :class="['status-badge', getStatusClass(request.status)]">
+              <span :class="['status-badge', `status-${getStatusClass(request.status)}`]">
                 {{ getStatusText(request.status) }}
               </span>
             </td>
@@ -142,27 +142,7 @@ const { formatDate, getStatusText, getStatusClass } = useFormatters()
   font-size: 13px;
 }
 
-.status-badge {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.status-badge.pending {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status-badge.approved {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.status-badge.rejected {
-  background: #fee2e2;
-  color: #991b1b;
-}
+/* .status-badge, .status-pending/approved/rejected → sử dụng từ global style.css */
 
 .btn-view {
   padding: 6px 16px;

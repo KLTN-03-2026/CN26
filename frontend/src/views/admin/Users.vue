@@ -2,7 +2,7 @@
   <AdminLayout activeMenu="users">
     <header class="top-header">
       <div class="header-left">
-        <h1>Quản Lý Người Dùng</h1>
+        <h1>Quản lý người dùng</h1>
       </div>
     </header>
 

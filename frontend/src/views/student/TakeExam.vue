@@ -1,6 +1,8 @@
 <template>
   <div class="exam-layout">
+    <!-- Desktop Sidebar -->
     <ExamSidebar
+      v-if="!isMobile"
       :exam-name="exam?.name || 'Đang tải...'"
       :time-remaining="timeRemaining"
       :questions="questions"
@@ -10,7 +12,21 @@
       @submit="confirmSubmit"
     />
 
-    <div class="exam-main-content">
+    <!-- Mobile Bottom Sheet -->
+    <ExamBottomSheet
+      v-if="isMobile"
+      :exam-name="exam?.name || 'Đang tải...'"
+      :time-remaining="timeRemaining"
+      :questions="questions"
+      :answers="answers"
+      :current-index="currentQuestionIndex"
+      @go-to-question="goToQuestion"
+      @submit="confirmSubmit"
+      @previous="previousQuestion"
+      @next="nextQuestion"
+    />
+
+    <div class="exam-main-content" :class="{ 'mobile-layout': isMobile }">
       <LoadingSpinner v-if="loading" />
       
       <EmptyState 
@@ -42,6 +58,7 @@ import examService from '../../services/examService'
 import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
 import EmptyState from '../../components/common/EmptyState.vue'
 import ExamSidebar from '../../components/student/ExamSidebar.vue'
+import ExamBottomSheet from '../../components/student/ExamBottomSheet.vue'
 import QuestionDisplay from '../../components/student/QuestionDisplay.vue'
 
 const router = useRouter()
@@ -55,6 +72,7 @@ const loading = ref(false)
 const timeRemaining = ref(0)
 const resultId = ref(null)
 const examStartTime = ref(null)
+const isMobile = ref(window.innerWidth <= 1024)
 let timer = null
 let warningShown = ref(false)
 
@@ -62,7 +80,14 @@ const STORAGE_KEY = computed(() => `exam_${route.params.id}_state`)
 
 const currentQuestion = computed(() => questions.value[currentQuestionIndex.value])
 
+// Handle window resize
+const handleResize = () => {
+  isMobile.value = window.innerWidth <= 1024
+}
+
 onMounted(async () => {
+  window.addEventListener('resize', handleResize)
+  
   // Try to restore state from localStorage
   const savedState = localStorage.getItem(STORAGE_KEY.value)
   if (savedState) {
@@ -86,6 +111,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   if (timer) clearInterval(timer)
+  window.removeEventListener('resize', handleResize)
 })
 
 const startExam = async () => {
@@ -172,17 +198,20 @@ const saveState = () => {
 const nextQuestion = () => {
   if (currentQuestionIndex.value < questions.value.length - 1) {
     currentQuestionIndex.value++
+    saveState()
   }
 }
 
 const previousQuestion = () => {
   if (currentQuestionIndex.value > 0) {
     currentQuestionIndex.value--
+    saveState()
   }
 }
 
 const goToQuestion = (index) => {
   currentQuestionIndex.value = index
+  saveState()
 }
 
 const confirmSubmit = () => {
@@ -237,10 +266,21 @@ const submitExam = async () => {
   padding: 40px;
 }
 
+.exam-main-content.mobile-layout {
+  margin-left: 0;
+  padding: 20px 20px 80px 20px; /* Extra bottom padding for bottom nav */
+}
+
 @media (max-width: 1024px) {
   .exam-main-content {
-    margin-left: 280px;
-    padding: 30px 20px;
+    margin-left: 0;
+    padding: 20px 20px 80px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .exam-main-content {
+    padding: 15px 15px 75px 15px;
   }
 }
 </style>

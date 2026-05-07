@@ -30,7 +30,14 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Số điện thoại</label>
-                <input v-model="profileForm.phone" type="tel">
+                <input 
+                  v-model="profileForm.phone" 
+                  type="tel"
+                  pattern="[0-9]{10}"
+                  maxlength="10"
+                  @input="validatePhone"
+                >
+                <small v-if="phoneError" class="error-text">{{ phoneError }}</small>
               </div>
               <div class="form-group">
                 <label>Ngày sinh</label>
@@ -133,6 +140,7 @@ const { loading: updating, execute: executeUpdate } = useAsyncAction()
 const { loading: changingPassword, execute: executeChangePassword } = useAsyncAction()
 const successMessage = ref('')
 const errorMessage = ref('')
+const phoneError = ref('')
 
 onMounted(() => {
   loadProfile()
@@ -155,9 +163,39 @@ const loadProfile = async () => {
   }
 }
 
+const validatePhone = (event) => {
+  const value = event.target.value
+  phoneError.value = ''
+  
+  // Remove non-numeric characters
+  const numericValue = value.replace(/\D/g, '')
+  profileForm.value.phone = numericValue
+  
+  // Validate
+  if (numericValue && numericValue.length > 0) {
+    if (numericValue.length !== 10) {
+      phoneError.value = 'Số điện thoại phải có đúng 10 số'
+    } else if (!numericValue.startsWith('0')) {
+      phoneError.value = 'Số điện thoại phải bắt đầu bằng số 0'
+    }
+  }
+}
+
 const updateProfile = async () => {
   successMessage.value = ''
   errorMessage.value = ''
+  
+  // Validate phone before submit
+  if (profileForm.value.phone) {
+    if (profileForm.value.phone.length !== 10) {
+      errorMessage.value = 'Số điện thoại phải có đúng 10 số'
+      return
+    }
+    if (!profileForm.value.phone.startsWith('0')) {
+      errorMessage.value = 'Số điện thoại phải bắt đầu bằng số 0'
+      return
+    }
+  }
   
   try {
     await executeUpdate(async () => {
@@ -205,6 +243,10 @@ const changePassword = async () => {
 </script>
 
 <style scoped>
-/* All shared styles moved to global style.css */
-/* No additional styles needed - using global classes */
+.error-text {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
 </style>

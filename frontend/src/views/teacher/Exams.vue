@@ -349,9 +349,7 @@ const openCreateModal = async () => {
   margin: 0 auto 10px;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+/* @keyframes spin is in global style.css */
 
 .question-item {
   display: flex;

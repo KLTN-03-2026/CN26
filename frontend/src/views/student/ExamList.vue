@@ -17,17 +17,6 @@
       </div>
     </div>
 
-    <div class="exam-stats-bar">
-      <div class="stat-item">
-        <span class="stat-number">{{ filteredExams.length }}</span>
-        <span class="stat-text">Đề thi khả dụng</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number">{{ uniqueSubjects }}</span>
-        <span class="stat-text">Môn học</span>
-      </div>
-    </div>
-
     <LoadingSpinner v-if="loading" />
 
     <EmptyState 
@@ -100,11 +89,6 @@ const filteredExams = computed(() => {
     const matchSearch = exam.name.toLowerCase().includes(searchQuery.value.toLowerCase())
     return matchSearch
   })
-})
-
-const uniqueSubjects = computed(() => {
-  const subjects = new Set(exams.value.map(e => e.subject))
-  return subjects.size
 })
 
 onMounted(() => {
@@ -224,33 +208,6 @@ const getExamStatus = (exam) => {
   font-size: 14px;
   color: #374151;
   font-weight: 600;
-}
-
-.exam-stats-bar {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 25px;
-}
-
-.stat-item {
-  background: white;
-  padding: 20px 30px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.stat-number {
-  font-size: 32px;
-  font-weight: 800;
-  color: #1e40af;
-}
-
-.stat-text {
-  font-size: 14px;
-  color: #6b7280;
 }
 
 .exam-grid {

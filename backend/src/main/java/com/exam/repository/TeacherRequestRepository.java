@@ -15,11 +15,7 @@ public interface TeacherRequestRepository extends JpaRepository<TeacherRequest, 
     
     List<TeacherRequest> findByStatusOrderByCreatedAtDesc(TeacherRequest.Status status);
     
-    List<TeacherRequest> findByStatus(TeacherRequest.Status status);
-    
     List<TeacherRequest> findByUserOrderByCreatedAtDesc(User user);
-    
-    List<TeacherRequest> findByUser(User user);
     
     Optional<TeacherRequest> findByUserAndStatus(User user, TeacherRequest.Status status);
     

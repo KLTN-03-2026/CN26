@@ -63,8 +63,13 @@
           </div>
         </div>
         <div class="exam-card-footer">
-          <button class="btn-start-exam" @click="startExam(exam.id)">
-            Bắt đầu làm bài
+          <button 
+            class="btn-start-exam" 
+            :class="{ 'btn-disabled': isExamClosed(exam) }"
+            :disabled="isExamClosed(exam)"
+            @click="startExam(exam.id)"
+          >
+            {{ getButtonText(exam) }}
           </button>
         </div>
       </div>
@@ -122,6 +127,40 @@ const loadExams = async () => {
 
 const startExam = (examId) => {
   router.push(`/student/exam/${examId}`)
+}
+
+const isExamClosed = (exam) => {
+  const now = new Date()
+  const endTime = exam.endTime ? new Date(exam.endTime) : null
+  const startTime = exam.startTime ? new Date(exam.startTime) : null
+  
+  // Đã hết hạn
+  if (endTime && now > endTime) {
+    return true
+  }
+  
+  // Chưa đến giờ mở
+  if (startTime && now < startTime) {
+    return true
+  }
+  
+  return false
+}
+
+const getButtonText = (exam) => {
+  const now = new Date()
+  const endTime = exam.endTime ? new Date(exam.endTime) : null
+  const startTime = exam.startTime ? new Date(exam.startTime) : null
+  
+  if (endTime && now > endTime) {
+    return 'Đã hết hạn'
+  }
+  
+  if (startTime && now < startTime) {
+    return 'Chưa đến giờ'
+  }
+  
+  return 'Bắt đầu làm bài'
 }
 
 const getExamStatus = (exam) => {
@@ -226,6 +265,8 @@ const getExamStatus = (exam) => {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   overflow: hidden;
   transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
 }
 
 .exam-card:hover {
@@ -281,6 +322,7 @@ const getExamStatus = (exam) => {
 
 .exam-card-body {
   padding: 20px;
+  flex: 1;
 }
 
 .exam-card-body h3 {
@@ -342,5 +384,18 @@ const getExamStatus = (exam) => {
 .btn-start-exam:hover {
   background: #1e3a8a;
   transform: translateY(-2px);
+}
+
+.btn-start-exam:disabled,
+.btn-start-exam.btn-disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-start-exam:disabled:hover,
+.btn-start-exam.btn-disabled:hover {
+  background: #9ca3af;
+  transform: none;
 }
 </style>

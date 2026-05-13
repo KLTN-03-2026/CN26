@@ -119,10 +119,6 @@ public class UserService {
         userRepository.deleteById(id);
     }
     
-    public long countByRole(String role) {
-        return userRepository.countByRole(User.Role.valueOf(role));
-    }
-    
     private UserDTO convertToDTO(User user) {
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());

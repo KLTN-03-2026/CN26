@@ -18,14 +18,6 @@ public interface QuestionRepository extends JpaRepository<Question, Integer> {
     
     List<Question> findByLevel(Question.Level level);
     
-    List<Question> findBySubjectAndLevel(String subject, Question.Level level);
-    
-    List<Question> findBySource(Question.Source source);
-    
-    List<Question> findByCreatedByOrderByCreatedAtDesc(User user);
-    
-    List<Question> findByCreatedByOrderByCreatedAtAsc(User user);
-    
     @Query("SELECT q FROM Question q WHERE q.createdBy = :user " +
            "AND (:source IS NULL OR q.source = :source) " +
            "ORDER BY CASE WHEN :sortOrder = 'newest' THEN q.createdAt END DESC, " +
@@ -35,8 +27,4 @@ public interface QuestionRepository extends JpaRepository<Question, Integer> {
         @Param("source") Question.Source source,
         @Param("sortOrder") String sortOrder
     );
-    
-    long countByCreatedBy(User user);
-    
-    long countBySubject(String subject);
 }

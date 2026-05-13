@@ -16,6 +16,4 @@ public interface AnswerRepository extends JpaRepository<Answer, Integer> {
     List<Answer> findByResultAndQuestion(Result result, Question question);
     
     long countByResultAndIsCorrect(Result result, Boolean isCorrect);
-    
-    void deleteByResult(Result result);
 }

@@ -46,6 +46,18 @@ public class ResultService {
         Exam exam = examRepository.findById(examId)
                 .orElseThrow(() -> new ResourceNotFoundException("Đề thi không tồn tại"));
         
+        // Check if user has ANY in-progress exam
+        long inProgressCount = resultRepository.countByUserAndStatus(currentUser, Result.Status.in_progress);
+        if (inProgressCount > 0) {
+            // Get the in-progress exam info
+            List<Result> inProgressResults = resultRepository.findByUserAndStatus(currentUser, Result.Status.in_progress);
+            Result inProgressResult = inProgressResults.get(0);
+            String examName = inProgressResult.getExam().getName();
+            throw new BadRequestException(
+                "Bạn đang có bài thi '" + examName + "' chưa hoàn thành. Vui lòng nộp bài trước khi làm bài mới."
+            );
+        }
+        
         // Check if exam is active
         if (!exam.getIsActive()) {
             throw new BadRequestException("Đề thi không khả dụng");
@@ -60,8 +72,7 @@ public class ResultService {
             throw new BadRequestException("Đề thi đã kết thúc");
         }
         
-        // Check if user already has an in-progress attempt
-        // If yes, return that result instead of creating new one
+        // Check if user already has an in-progress attempt for THIS exam
         var existingResult = resultRepository.findByUserAndExamAndStatus(currentUser, exam, Result.Status.in_progress);
         if (existingResult.isPresent()) {
             return convertToDTO(existingResult.get());
@@ -69,30 +80,32 @@ public class ResultService {
         
         // Check max attempts limit
         if (exam.getMaxAttempts() != null && exam.getMaxAttempts() > 0) {
-            // Count only completed (graded) attempts, not in_progress
             long completedAttempts = resultRepository.countByUserAndExamAndStatus(currentUser, exam, Result.Status.graded);
             if (completedAttempts >= exam.getMaxAttempts()) {
                 throw new BadRequestException("Bạn đã hết số lần làm bài cho đề thi này");
             }
         }
         
-        // Double-check: Ensure no other in_progress result exists (prevent race condition from multiple tabs)
-        var doubleCheckResult = resultRepository.findByUserAndExamAndStatus(currentUser, exam, Result.Status.in_progress);
-        if (doubleCheckResult.isPresent()) {
-            return convertToDTO(doubleCheckResult.get());
+        // Create new result - UNIQUE constraint prevents duplicate
+        try {
+            Result result = new Result();
+            result.setUser(currentUser);
+            result.setExam(exam);
+            result.setScore(BigDecimal.ZERO);
+            result.setTotalCorrect(0);
+            result.setTotalQuestions(exam.getTotalQuestions());
+            result.setStatus(Result.Status.in_progress);
+            
+            result = resultRepository.save(result);
+            return convertToDTO(result);
+        } catch (Exception e) {
+            // If duplicate (race condition), query existing result
+            var retryResult = resultRepository.findByUserAndExamAndStatus(currentUser, exam, Result.Status.in_progress);
+            if (retryResult.isPresent()) {
+                return convertToDTO(retryResult.get());
+            }
+            throw e;
         }
-        
-        // Create new result
-        Result result = new Result();
-        result.setUser(currentUser);
-        result.setExam(exam);
-        result.setScore(BigDecimal.ZERO);
-        result.setTotalCorrect(0);
-        result.setTotalQuestions(exam.getTotalQuestions());
-        result.setStatus(Result.Status.in_progress);
-        
-        result = resultRepository.save(result);
-        return convertToDTO(result);
     }
     
     @Transactional
@@ -109,7 +122,7 @@ public class ResultService {
             throw new BadRequestException("Bài thi đã được nộp");
         }
         
-        // Save answers
+        // Save answers - LƯU TẤT CẢ CÂU (kể cả chưa chọn)
         for (SubmitAnswerRequest.AnswerItem answerItem : request.getAnswers()) {
             Question question = questionRepository.findById(answerItem.getQuestionId())
                     .orElseThrow(() -> new ResourceNotFoundException("Câu hỏi không tồn tại"));
@@ -117,8 +130,16 @@ public class ResultService {
             Answer answer = new Answer();
             answer.setResult(result);
             answer.setQuestion(question);
-            answer.setSelectedAnswer(Question.Answer.valueOf(answerItem.getSelectedAnswer()));
-            answer.setIsCorrect(question.getCorrectAnswer().name().equals(answerItem.getSelectedAnswer()));
+            
+            // Xử lý câu đã chọn và chưa chọn
+            if (answerItem.getSelectedAnswer() != null && !answerItem.getSelectedAnswer().isEmpty()) {
+                answer.setSelectedAnswer(Question.Answer.valueOf(answerItem.getSelectedAnswer()));
+                answer.setIsCorrect(question.getCorrectAnswer().name().equals(answerItem.getSelectedAnswer()));
+            } else {
+                // Câu chưa chọn -> lưu NULL, tính là sai
+                answer.setSelectedAnswer(null);
+                answer.setIsCorrect(false);
+            }
             
             answerRepository.save(answer);
         }
@@ -181,7 +202,7 @@ public class ResultService {
         return dto;
     }
     
-    public List<Answer> getResultAnswers(Integer resultId) {
+    public List<AnswerDTO> getResultAnswers(Integer resultId) {
         Result result = resultRepository.findById(resultId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kết quả thi không tồn tại"));
         
@@ -192,7 +213,10 @@ public class ResultService {
             throw new BadRequestException("Bạn không có quyền xem chi tiết bài làm");
         }
         
-        return answerRepository.findByResult(result);
+        List<Answer> answers = answerRepository.findByResult(result);
+        return answers.stream()
+                .map(this::convertAnswerToDTO)
+                .collect(Collectors.toList());
     }
     
     public List<ResultDTO> getExamResults(Integer examId) {
@@ -216,7 +240,7 @@ public class ResultService {
         long totalAttempts = resultRepository.countByExamAndStatus(exam, Result.Status.graded);
         stats.setTotalAttempts(totalAttempts);
         
-        List<Result> results = resultRepository.findByExamAndStatus(exam, Result.Status.graded);
+        List<Result> results = resultRepository.findByExamAndStatusOrderBySubmitTimeDesc(exam, Result.Status.graded);
         long totalStudents = results.stream()
                 .map(r -> r.getUser().getId())
                 .distinct()
@@ -327,7 +351,8 @@ public class ResultService {
         dto.setOptionB(answer.getQuestion().getOptionB());
         dto.setOptionC(answer.getQuestion().getOptionC());
         dto.setOptionD(answer.getQuestion().getOptionD());
-        dto.setSelectedAnswer(answer.getSelectedAnswer().name());
+        // Xử lý null cho selectedAnswer
+        dto.setSelectedAnswer(answer.getSelectedAnswer() != null ? answer.getSelectedAnswer().name() : null);
         dto.setCorrectAnswer(answer.getQuestion().getCorrectAnswer().name());
         dto.setIsCorrect(answer.getIsCorrect());
         return dto;

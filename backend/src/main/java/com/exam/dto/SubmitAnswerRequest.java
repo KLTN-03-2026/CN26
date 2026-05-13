@@ -19,7 +19,7 @@ public class SubmitAnswerRequest {
         @NotNull(message = "ID câu hỏi không được để trống")
         private Integer questionId;
         
-        @NotNull(message = "Đáp án không được để trống")
-        private String selectedAnswer; // A, B, C, D
+        // Cho phép null - câu chưa chọn sẽ không tính điểm
+        private String selectedAnswer; // A, B, C, D hoặc null
     }
 }

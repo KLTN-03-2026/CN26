@@ -1,10 +1,6 @@
 import api from './api'
 
 export default {
-  getAllExams() {
-    return api.get('/exams')
-  },
-  
   getActiveExams() {
     return api.get('/exams/active')
   },
@@ -19,10 +15,6 @@ export default {
   
   getExamQuestions(id) {
     return api.get(`/exams/${id}/questions`)
-  },
-  
-  getExamsBySubject(subject) {
-    return api.get(`/exams/subject/${subject}`)
   },
   
   createExam(data) {

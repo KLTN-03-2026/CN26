@@ -1,5 +1,6 @@
 package com.exam.controller;
 
+import com.exam.dto.AnswerDTO;
 import com.exam.dto.ApiResponse;
 import com.exam.dto.ExamStatisticsDTO;
 import com.exam.dto.ResultDTO;
@@ -46,8 +47,8 @@ public class ResultController {
     }
     
     @GetMapping("/{id}/answers")
-    public ResponseEntity<ApiResponse<List<Answer>>> getResultAnswers(@PathVariable Integer id) {
-        List<Answer> answers = resultService.getResultAnswers(id);
+    public ResponseEntity<ApiResponse<List<AnswerDTO>>> getResultAnswers(@PathVariable Integer id) {
+        List<AnswerDTO> answers = resultService.getResultAnswers(id);
         return ResponseEntity.ok(ApiResponse.success(answers));
     }
     

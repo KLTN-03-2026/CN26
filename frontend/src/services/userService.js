@@ -17,10 +17,6 @@ export default {
     return api.get('/users')
   },
   
-  getUserById(id) {
-    return api.get(`/users/${id}`)
-  },
-  
   lockUser(id) {
     return api.post(`/users/${id}/lock`)
   },

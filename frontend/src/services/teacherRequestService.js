@@ -21,10 +21,6 @@ export default {
     return api.get('/teacher-requests/pending')
   },
   
-  getRequestById(id) {
-    return api.get(`/teacher-requests/${id}`)
-  },
-  
   reviewRequest(id, data) {
     return api.post(`/teacher-requests/${id}/review`, data)
   },

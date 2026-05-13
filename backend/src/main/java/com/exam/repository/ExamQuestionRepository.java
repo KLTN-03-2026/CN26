@@ -15,9 +15,5 @@ public interface ExamQuestionRepository extends JpaRepository<ExamQuestion, Inte
     
     List<ExamQuestion> findByExam(Exam exam);
     
-    boolean existsByExamAndQuestion(Exam exam, Question question);
-    
-    void deleteByExam(Exam exam);
-    
     long countByExam(Exam exam);
 }

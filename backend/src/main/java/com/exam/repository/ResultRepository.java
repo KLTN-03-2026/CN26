@@ -17,25 +17,19 @@ public interface ResultRepository extends JpaRepository<Result, Integer> {
     
     List<Result> findByUserOrderByStartTimeDesc(User user);
     
-    List<Result> findByUser(User user);
-    
-    List<Result> findByExam(Exam exam);
-    
-    List<Result> findByUserAndExam(User user, Exam exam);
-    
     Optional<Result> findByUserAndExamAndStatus(User user, Exam exam, Result.Status status);
     
     List<Result> findByUserAndStatus(User user, Result.Status status);
     
     List<Result> findByExamAndStatusOrderBySubmitTimeDesc(Exam exam, Result.Status status);
     
-    List<Result> findByExamAndStatus(Exam exam, Result.Status status);
-    
     long countByExam(Exam exam);
     
     long countByExamAndStatus(Exam exam, Result.Status status);
     
     long countByUserAndExamAndStatus(User user, Exam exam, Result.Status status);
+    
+    long countByUserAndStatus(User user, Result.Status status);
     
     // Statistics queries
     @Query("SELECT AVG(r.score) FROM Result r WHERE r.exam = :exam AND r.status = 'graded'")

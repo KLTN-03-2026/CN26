@@ -1,24 +1,8 @@
 import api from './api'
 
 export default {
-  getAllQuestions() {
-    return api.get('/questions')
-  },
-  
   getMyQuestions(params) {
     return api.get('/questions/my', { params })
-  },
-  
-  getQuestionById(id) {
-    return api.get(`/questions/${id}`)
-  },
-  
-  getQuestionsBySubject(subject) {
-    return api.get(`/questions/subject/${subject}`)
-  },
-  
-  getQuestionsByLevel(level) {
-    return api.get(`/questions/level/${level}`)
   },
   
   createQuestion(data) {

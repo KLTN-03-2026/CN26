@@ -32,8 +32,13 @@ public class Answer {
     private Question question;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "selected_answer", nullable = false)
+    @Column(name = "selected_answer", nullable = true)
     private Question.Answer selectedAnswer;
+    
+    // Getter tùy chỉnh để tránh lỗi khi serialize null
+    public String getSelectedAnswerString() {
+        return selectedAnswer != null ? selectedAnswer.name() : null;
+    }
     
     @Column(name = "is_correct")
     private Boolean isCorrect = false;

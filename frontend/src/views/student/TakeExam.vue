@@ -146,6 +146,13 @@ const startExam = async () => {
       const elapsedSeconds = Math.floor((now - startTime) / 1000)
       const totalSeconds = exam.value.duration * 60
       timeRemaining.value = Math.max(0, totalSeconds - elapsedSeconds)
+      
+      // Nếu đã hết giờ → tự động nộp bài ngay
+      if (timeRemaining.value === 0) {
+        alert('Thời gian làm bài đã hết! Hệ thống sẽ tự động nộp bài.')
+        await submitExam()
+        return true
+      }
     }
     
     // Save state to localStorage
@@ -170,7 +177,7 @@ const startTimer = () => {
       // Show warning when 5 minutes remaining
       if (timeRemaining.value === 300 && !warningShown.value) {
         warningShown.value = true
-        alert('⚠️ Cảnh báo: Còn 5 phút nữa là hết giờ làm bài!')
+        alert('Cảnh báo: Còn 5 phút nữa là hết giờ làm bài!')
       }
     } else {
       // Clear timer first to prevent infinite loop
